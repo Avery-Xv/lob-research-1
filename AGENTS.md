@@ -35,6 +35,19 @@ Use Python 3 type hints, four-space indentation, `snake_case` names, and `UPPER_
 
 Name generated files by factor, window, universe, and horizon, for example `intraday_factor_1000_1030_202601.csv`. Place outputs in the appropriate `data/` or `results/` subdirectory, never at repository root.
 
+## Data Universe Guidelines
+
+Unless a task explicitly studies ETFs or other fund products, factor calculations
+and backtests in this repository should use an A-share stock universe and must not
+mix ETF LOB files into the input. In particular, do not pass an unrestricted
+`event_depth10_v4/<month>/*.parquet` glob directly to a stock factor job because
+the v4 directories include ETF files. Build the input list from point-in-time
+security master data with an explicit stock-type whitelist; code-prefix filters
+may be used only as a temporary, documented fallback. Do not rely on a later
+return, market-cap, or risk-data join to remove ETFs implicitly. Record the
+universe rule in generated artifacts and validate that the stock output contains
+zero ETF symbols before a full-market run.
+
 ## Testing Guidelines
 
 For factor changes, validate event counts and values on one file, then compare serial and parallel outputs on a small identical sample. For backtests, verify factor time, entry time, and exit time explicitly. Never filter using future return-window information. Review `data/README.md` and the Shanghai `FULL`/`PARTIAL` linkage notes in `README.md` before using order-record links.

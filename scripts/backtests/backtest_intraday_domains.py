@@ -24,6 +24,10 @@ def parse_float(value: str | None) -> float | None:
     return result if result is not None and math.isfinite(result) else None
 
 
+def normalize_date(value: str) -> str:
+    return value.replace("-", "")
+
+
 def pearson(xs: list[float], ys: list[float]) -> float | None:
     if len(xs) < 3:
         return None
@@ -84,7 +88,10 @@ def load_previous_vectors(path: str, value_cols: list[str]) -> dict[tuple[str, s
             values = [parse_float(row.get(column)) for column in value_cols]
             if all(value is not None for value in values):
                 by_symbol[row["symbol"]].append(
-                    (row["date"], [float(value) for value in values if value is not None])
+                    (
+                        normalize_date(row["date"]),
+                        [float(value) for value in values if value is not None],
+                    )
                 )
 
     previous = {}
@@ -116,6 +123,15 @@ def neutralize(values: list[float], exposures: list[list[float]]) -> list[float]
         projection = sum(value * base for value, base in zip(residual, basis))
         residual = [value - projection * base for value, base in zip(residual, basis)]
     return residual
+
+
+def order_returns(
+    factors: list[float],
+    returns: list[float],
+    symbols: list[str],
+) -> list[float]:
+    order = sorted(range(len(factors)), key=lambda index: (factors[index], symbols[index]))
+    return [returns[index] for index in order]
 
 
 def load_factors(paths: list[str], factor_col: str) -> dict[str, list[dict[str, object]]]:
@@ -249,6 +265,7 @@ def main() -> int:
                 continue
             grouped[(group[0], group[1], date)].append(
                 {
+                    "symbol": symbol,
                     "factor": float(row["factor"]),
                     "ret": ret,
                     "prev_cap": prev_cap,
@@ -273,6 +290,11 @@ def main() -> int:
                     else raw_factors
                 )
                 rets = [row["ret"] for row in rows]
+                ordered_rets = order_returns(
+                    factors,
+                    rets,
+                    [str(row["symbol"]) for row in rows],
+                )
                 bucket = max(1, n // 10)
                 top_count = max(1, math.ceil(n * 0.2))
                 universe_ret = mean(rets)
@@ -285,12 +307,12 @@ def main() -> int:
                         "raw_rank_ic": pearson(ranks(raw_factors), ranks(rets)),
                         "rank_ic": pearson(ranks(factors), ranks(rets)),
                         "pearson_ic": pearson(factors, rets),
-                        "d10_d1": mean(rets[-bucket:]) - mean(rets[:bucket]),
-                        "bottom20_ret": mean(rets[:top_count]),
-                        "top20_ret": mean(rets[-top_count:]),
+                        "d10_d1": mean(ordered_rets[-bucket:]) - mean(ordered_rets[:bucket]),
+                        "bottom20_ret": mean(ordered_rets[:top_count]),
+                        "top20_ret": mean(ordered_rets[-top_count:]),
                         "universe_ret": universe_ret,
-                        "bottom20_excess": mean(rets[:top_count]) - universe_ret,
-                        "top20_excess": mean(rets[-top_count:]) - universe_ret,
+                        "bottom20_excess": mean(ordered_rets[:top_count]) - universe_ret,
+                        "top20_excess": mean(ordered_rets[-top_count:]) - universe_ret,
                         "avg_prev_cap_yi": mean(row["prev_cap"] for row in rows) / 10_000,
                         "avg_start_mid": mean(row["start_mid"] for row in rows),
                     }

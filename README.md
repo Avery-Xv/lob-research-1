@@ -136,6 +136,13 @@ ORDER_ADD (unexecuted remainder enters the visible book)
 TRADE / CANCEL (later lifecycle of the resting remainder)
 ```
 
+The immediate executions are not absent from the order-book data. Every
+immediate match produces a `TRADE`-triggered v3 row, and the full-depth snapshot
+on that row is the book state after that individual match. If one incoming
+order sweeps several resting orders, v3 therefore contains several consecutive
+`TRADE`-triggered book updates. What may be absent or delayed is the incoming
+order's `ORDER_ADD`, not the book updates caused by its executions.
+
 An observed example in `SH600004` on `20260105` uses order ID `296124`:
 
 ```text
@@ -156,6 +163,8 @@ Consequences:
 
 - The first occurrence of a Shanghai aggressive order may be a `TRADE`, not an
   `ORDER_ADD`.
+- Immediate executions and their book effects must be read from the `TRADE`
+  trigger rows; each row's snapshot is post-match, not pre-match.
 - An `ORDER_ADD` after one or more trades can represent only the matched
   order's remainder, not its original submitted quantity.
 - A Shanghai order that is fully executed immediately may never have an
