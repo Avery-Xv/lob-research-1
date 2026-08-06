@@ -52,6 +52,14 @@ zero ETF symbols before a full-market run.
 
 For factor changes, validate event counts and values on one file, then compare serial and parallel outputs on a small identical sample. For backtests, verify factor time, entry time, and exit time explicitly. Never filter using future return-window information. Review `data/README.md` and the Shanghai `FULL`/`PARTIAL` linkage notes in `README.md` before using order-record links.
 
+## Research Evaluation Defaults
+
+By default, evaluate and report factor results without neutralization. Treat raw,
+non-neutralized results as the primary research output. Run style, industry, LOB,
+or other neutralized variants only when the user explicitly requests them or as a
+clearly labeled secondary robustness check after the raw result; do not let a
+neutralized specification silently replace the raw baseline.
+
 ## Commit & Pull Request Guidelines
 
 No Git history is present, so no repository-specific convention can be inferred. Use concise imperative commits such as `Fix point-in-time universe filter`. Pull requests should describe the factor definition, time boundaries, data universe, leakage controls, validation commands, and any regenerated artifacts. Include compact before/after metrics for behavioral changes; screenshots are unnecessary for this non-UI project.

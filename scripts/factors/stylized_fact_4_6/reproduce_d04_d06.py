@@ -18,7 +18,7 @@ import math
 import os
 import random
 import shutil
-from collections import defaultdict
+from collections import defaultdict, deque
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from statistics import mean
@@ -196,9 +196,113 @@ def lagged_surprise(current: float, history: Sequence[float], length: int = 60) 
         return None
     sample = list(history[-length:])
     center = ewma(sample, length)
-    variance = sum((value - mean(sample)) ** 2 for value in sample) / len(sample)
+    sample_mean = mean(sample)
+    variance = sum((value - sample_mean) ** 2 for value in sample) / len(sample)
     scale = math.sqrt(variance)
     return (current - center) / scale if scale > 0 else 0.0
+
+
+class RollingSurprise:
+    """Strictly-lagged fixed-window surprise with O(1) updates."""
+
+    def __init__(self, length: int = 60) -> None:
+        self.length = length
+        self.values: deque[float] = deque()
+        self.total = 0.0
+        self.total_squared = 0.0
+        self.alpha = 2.0 / (length + 1.0)
+        self.decay = 1.0 - self.alpha
+        self.decay_power = self.decay ** length
+        self.center: float | None = None
+
+    def score(self, current: float) -> float | None:
+        if len(self.values) < self.length:
+            return None
+        sample_mean = self.total / self.length
+        variance = max(0.0, self.total_squared / self.length - sample_mean ** 2)
+        scale = math.sqrt(variance)
+        assert self.center is not None
+        return (current - self.center) / scale if scale > 0 else 0.0
+
+    def append(self, value: float) -> None:
+        if len(self.values) < self.length:
+            self.values.append(value)
+            self.total += value
+            self.total_squared += value * value
+            if len(self.values) == self.length:
+                self.center = ewma(list(self.values), self.length)
+            return
+
+        oldest = self.values.popleft()
+        new_first = self.values[0]
+        assert self.center is not None
+        self.center = (
+            self.decay * self.center
+            - self.decay_power * oldest
+            + self.decay_power * new_first
+            + self.alpha * value
+        )
+        self.values.append(value)
+        self.total += value - oldest
+        self.total_squared += value * value - oldest * oldest
+
+
+class D05State:
+    """Incremental D05 history for one symbol/window/threshold series."""
+
+    def __init__(self) -> None:
+        self.d04_surprise = RollingSurprise()
+        self.buy_surprise = RollingSurprise()
+        self.sell_surprise = RollingSurprise()
+        self.ewma3: float | None = None
+        self.ewma20: float | None = None
+        self.recent: deque[float] = deque(maxlen=5)
+        self.last_sign = 0
+        self.run_length = 0
+        self.observations = 0
+
+    def update(
+        self, current: float, buy_current: float, sell_current: float
+    ) -> dict[str, object]:
+        surprise = self.d04_surprise.score(current)
+        buy_surprise = self.buy_surprise.score(buy_current)
+        sell_surprise = self.sell_surprise.score(sell_current)
+
+        self.ewma3 = current if self.ewma3 is None else (
+            0.5 * current + 0.5 * self.ewma3
+        )
+        alpha20 = 2.0 / 21.0
+        self.ewma20 = current if self.ewma20 is None else (
+            alpha20 * current + (1.0 - alpha20) * self.ewma20
+        )
+        self.recent.append(current)
+        persistence = sum(self.recent) if len(self.recent) == 5 else None
+        sign = 1 if current > 0 else (-1 if current < 0 else 0)
+        same_sign_count = sum(
+            (1 if value > 0 else (-1 if value < 0 else 0)) == sign
+            for value in self.recent
+        ) if len(self.recent) == 5 and sign else None
+        if sign:
+            self.run_length = self.run_length + 1 if sign == self.last_sign else 1
+        else:
+            self.run_length = 0
+        self.last_sign = sign
+
+        result = {
+            "d05_surprise_60": surprise,
+            "d05_buy_surprise_60": buy_surprise,
+            "d05_sell_surprise_60": sell_surprise,
+            "d05_acceleration_3_20": self.ewma3 - self.ewma20,
+            "d05_persistence_5": persistence,
+            "d05_same_sign_count_5": same_sign_count,
+            "d05_same_sign_run_length": self.run_length if sign else None,
+            "d05_history_observations": self.observations,
+        }
+        self.d04_surprise.append(current)
+        self.buy_surprise.append(buy_current)
+        self.sell_surprise.append(sell_current)
+        self.observations += 1
+        return result
 
 
 def load_control_rows(path: str) -> tuple[dict[tuple[str, int], dict[str, str]], set[str]]:
@@ -705,9 +809,12 @@ def finalize_factors(
     min_cross_section: int,
 ) -> list[dict[str, object]]:
     controls, _ = load_control_rows(controls_file)
-    grouped: dict[tuple[int, str, str], list[dict[str, object]]] = defaultdict(list)
-    with open(primitive_path, newline="") as handle:
-        for primitive in csv.DictReader(handle):
+    states: dict[tuple[str, str, str], D05State] = {}
+    output: list[dict[str, object]] = []
+
+    def process_group(primitives: Sequence[dict[str, str]]) -> None:
+        common_rows: list[dict[str, object]] = []
+        for primitive in primitives:
             if primitive["is_valid"].lower() not in ("true", "1"):
                 continue
             symbol, date = primitive["symbol"], int(primitive["date"])
@@ -725,138 +832,143 @@ def finalize_factors(
             }
             if any(value is None for value in values.values()):
                 continue
-            for version in THRESHOLD_VERSIONS:
+            common_rows.append({
+                "primitive": primitive,
+                "symbol": symbol,
+                "date": date,
+                "frequency": primitive["frequency"],
+                "window_name": primitive["window_name"],
+                "board": control["board"],
+                "threshold_history_days": int(primitive["threshold_history_days"]),
+                "threshold_history_order_count": int(
+                    float(primitive["threshold_history_order_count"])
+                ),
+                **{name: float(value) for name, value in values.items()},
+            })
+
+        for version in sorted(THRESHOLD_VERSIONS):
+            rows: list[dict[str, object]] = []
+            for common in common_rows:
+                primitive = common["primitive"]
+                assert isinstance(primitive, dict)
                 alf = finite(primitive[f"{version}_alf"])
                 if alf is None:
                     continue
-                row: dict[str, object] = {
-                    "symbol": symbol, "date": date,
-                    "frequency": primitive["frequency"],
-                    "window_name": primitive["window_name"],
-                    "threshold_version": version, "alf_raw": alf,
-                    "board": control["board"],
+                rows.append({
+                    **{name: value for name, value in common.items() if name != "primitive"},
+                    "threshold_version": version,
+                    "alf_raw": alf,
                     "buy_qty": float(primitive[f"{version}_buy_exec_qty"]),
                     "sell_qty": float(primitive[f"{version}_sell_exec_qty"]),
-                    "threshold_history_days": int(primitive["threshold_history_days"]),
-                    "threshold_history_order_count": int(float(primitive["threshold_history_order_count"])),
-                }
-                row.update({name: float(value) for name, value in values.items()})
-                grouped[(date, primitive["window_name"], version)].append(row)
-
-    all_rows: list[dict[str, object]] = []
-    for _key, rows in sorted(grouped.items()):
-        rows.sort(key=lambda row: str(row["symbol"]))
-        if len(rows) < min_cross_section:
-            continue
-        clipped = winsorize([float(row["alf_raw"]) for row in rows])
-        d04_basis = build_orthonormal_basis(
-            build_exposures(rows, include_window_return=True)
-        )
-        response_basis = build_orthonormal_basis(
-            build_exposures(rows, include_window_return=False)
-        )
-        d04 = residualize(clipped, d04_basis)
-        response = residualize(
-            [float(row["window_return"]) for row in rows], response_basis
-        )
-        d04_z = zscores(d04)
-        d04_rank = percentile_ranks(d04)
-        response_z = zscores(response)
-        response_rank = percentile_ranks(response)
-        covariance = sum(x * y for x, y in zip(d04, response))
-        variance = sum(x * x for x in d04)
-        beta = covariance / variance if variance > 0 else 0.0
-        model_r2 = r_squared(clipped, d04)
-        for index, row in enumerate(rows):
-            flow_bucket = quintile(d04_rank[index])
-            response_bucket = quintile(response_rank[index])
-            event = 1 if flow_bucket == 5 and response_bucket <= 2 else (
-                -1 if flow_bucket == 1 and response_bucket >= 4 else 0
-            )
-            expected = beta * d04[index]
-            row.update(
-                alf_winsorized=clipped[index], d04_residual=d04[index],
-                d04_z=d04_z[index], d04_rank_pct=d04_rank[index],
-                d04_cross_section_n=len(rows), d04_regression_r2=model_r2,
-                price_response_residual=response[index],
-                d06_flow_bucket=flow_bucket, d06_response_bucket=response_bucket,
-                d06_underreaction_event=event,
-                d06_diff=d04_z[index] - response_z[index],
-                d06_expected_response=expected,
-                d06_response_gap=expected - response[index],
-                d06_daily_beta=beta,
-            )
-            all_rows.append(row)
-
-    series: dict[tuple[str, str, str], list[dict[str, object]]] = defaultdict(list)
-    for row in all_rows:
-        series[(str(row["symbol"]), str(row["window_name"]), str(row["threshold_version"]))].append(row)
-    output: list[dict[str, object]] = []
-    for observations in series.values():
-        observations.sort(key=lambda row: int(row["date"]))
-        d04_history: list[float] = []
-        buy_history: list[float] = []
-        sell_history: list[float] = []
-        for row in observations:
-            current = float(row["d04_residual"])
-            buy_current = math.log1p(float(row["buy_qty"]))
-            sell_current = math.log1p(float(row["sell_qty"]))
-            row["d05_surprise_60"] = lagged_surprise(current, d04_history)
-            row["d05_buy_surprise_60"] = lagged_surprise(buy_current, buy_history)
-            row["d05_sell_surprise_60"] = lagged_surprise(sell_current, sell_history)
-            inclusive = d04_history + [current]
-            row["d05_acceleration_3_20"] = ewma(inclusive, 3) - ewma(inclusive, 20)
-            recent = inclusive[-5:]
-            row["d05_persistence_5"] = sum(recent) if len(recent) == 5 else None
-            sign = 1 if current > 0 else (-1 if current < 0 else 0)
-            row["d05_same_sign_count_5"] = sum(
-                (1 if value > 0 else (-1 if value < 0 else 0)) == sign
-                for value in recent
-            ) if len(recent) == 5 and sign else None
-            run_length = 0
-            if sign:
-                for value in reversed(inclusive):
-                    if (1 if value > 0 else (-1 if value < 0 else 0)) != sign:
-                        break
-                    run_length += 1
-            row["d05_same_sign_run_length"] = run_length if sign else None
-            row["d05_history_observations"] = len(d04_history)
-            if factor_date_from <= int(row["date"]) <= factor_date_to:
-                output.append({
-                    "symbol": row["symbol"], "date": row["date"],
-                    "frequency": row["frequency"], "window_name": row["window_name"],
-                    "threshold_version": row["threshold_version"],
-                    "alf_raw": row["alf_raw"], "alf_winsorized": row["alf_winsorized"],
-                    "d04_residual": row["d04_residual"], "d04_z": row["d04_z"],
-                    "d04_rank_pct": row["d04_rank_pct"],
-                    "d04_cross_section_n": row["d04_cross_section_n"],
-                    "d04_regression_r2": row["d04_regression_r2"],
-                    "d05_surprise_60": row["d05_surprise_60"],
-                    "d05_acceleration_3_20": row["d05_acceleration_3_20"],
-                    "d05_persistence_5": row["d05_persistence_5"],
-                    "d05_same_sign_count_5": row["d05_same_sign_count_5"],
-                    "d05_same_sign_run_length": row["d05_same_sign_run_length"],
-                    "d05_buy_surprise_60": row["d05_buy_surprise_60"],
-                    "d05_sell_surprise_60": row["d05_sell_surprise_60"],
-                    "d05_history_observations": row["d05_history_observations"],
-                    "price_response_residual": row["price_response_residual"],
-                    "d06_flow_bucket": row["d06_flow_bucket"],
-                    "d06_response_bucket": row["d06_response_bucket"],
-                    "d06_underreaction_event": row["d06_underreaction_event"],
-                    "d06_diff": row["d06_diff"],
-                    "d06_expected_response": row["d06_expected_response"],
-                    "d06_response_gap": row["d06_response_gap"],
-                    "d06_daily_beta": row["d06_daily_beta"],
-                    "active_large_buy_exec_qty": row["buy_qty"],
-                    "active_large_sell_exec_qty": row["sell_qty"],
-                    "threshold_history_days": row["threshold_history_days"],
-                    "threshold_history_order_count": row["threshold_history_order_count"],
-                    "is_valid": True, "invalid_reason": "",
-                    "factor_version": FACTOR_VERSION,
                 })
-            d04_history.append(current)
-            buy_history.append(buy_current)
-            sell_history.append(sell_current)
+            rows.sort(key=lambda row: str(row["symbol"]))
+            if len(rows) < min_cross_section:
+                continue
+
+            clipped = winsorize([float(row["alf_raw"]) for row in rows])
+            d04_basis = build_orthonormal_basis(
+                build_exposures(rows, include_window_return=True)
+            )
+            response_basis = build_orthonormal_basis(
+                build_exposures(rows, include_window_return=False)
+            )
+            d04 = residualize(clipped, d04_basis)
+            response = residualize(
+                [float(row["window_return"]) for row in rows], response_basis
+            )
+            d04_z = zscores(d04)
+            d04_rank = percentile_ranks(d04)
+            response_z = zscores(response)
+            response_rank = percentile_ranks(response)
+            covariance = sum(x * y for x, y in zip(d04, response))
+            variance = sum(x * x for x in d04)
+            beta = covariance / variance if variance > 0 else 0.0
+            model_r2 = r_squared(clipped, d04)
+
+            for index, row in enumerate(rows):
+                flow_bucket = quintile(d04_rank[index])
+                response_bucket = quintile(response_rank[index])
+                event = 1 if flow_bucket == 5 and response_bucket <= 2 else (
+                    -1 if flow_bucket == 1 and response_bucket >= 4 else 0
+                )
+                expected = beta * d04[index]
+                key = (
+                    str(row["symbol"]),
+                    str(row["window_name"]),
+                    str(row["threshold_version"]),
+                )
+                state = states.get(key)
+                if state is None:
+                    state = D05State()
+                    states[key] = state
+                d05 = state.update(
+                    d04[index],
+                    math.log1p(float(row["buy_qty"])),
+                    math.log1p(float(row["sell_qty"])),
+                )
+                date = int(row["date"])
+                if factor_date_from <= date <= factor_date_to:
+                    output.append({
+                        "symbol": row["symbol"], "date": date,
+                        "frequency": row["frequency"],
+                        "window_name": row["window_name"],
+                        "threshold_version": row["threshold_version"],
+                        "alf_raw": row["alf_raw"],
+                        "alf_winsorized": clipped[index],
+                        "d04_residual": d04[index],
+                        "d04_z": d04_z[index],
+                        "d04_rank_pct": d04_rank[index],
+                        "d04_cross_section_n": len(rows),
+                        "d04_regression_r2": model_r2,
+                        **d05,
+                        "price_response_residual": response[index],
+                        "d06_flow_bucket": flow_bucket,
+                        "d06_response_bucket": response_bucket,
+                        "d06_underreaction_event": event,
+                        "d06_diff": d04_z[index] - response_z[index],
+                        "d06_expected_response": expected,
+                        "d06_response_gap": expected - response[index],
+                        "d06_daily_beta": beta,
+                        "active_large_buy_exec_qty": row["buy_qty"],
+                        "active_large_sell_exec_qty": row["sell_qty"],
+                        "threshold_history_days": row["threshold_history_days"],
+                        "threshold_history_order_count": row[
+                            "threshold_history_order_count"
+                        ],
+                        "is_valid": True,
+                        "invalid_reason": "",
+                        "factor_version": FACTOR_VERSION,
+                    })
+
+    current_key: tuple[int, str] | None = None
+    group: list[dict[str, str]] = []
+    completed_groups = 0
+    with open(primitive_path, newline="") as handle:
+        for primitive in csv.DictReader(handle):
+            key = (int(primitive["date"]), primitive["window_name"])
+            if current_key is not None and key < current_key:
+                raise ValueError(
+                    "primitive input must be sorted by date and window_name"
+                )
+            if current_key is not None and key != current_key:
+                process_group(group)
+                completed_groups += 1
+                if completed_groups % 10 == 0:
+                    print(
+                        f"factor_groups={completed_groups} last_group={current_key}",
+                        flush=True,
+                    )
+                group = []
+            current_key = key
+            group.append(primitive)
+    if group:
+        process_group(group)
+        completed_groups += 1
+        print(
+            f"factor_groups={completed_groups} last_group={current_key}",
+            flush=True,
+        )
+
     output.sort(key=lambda row: (
         int(row["date"]), str(row["window_name"]),
         str(row["threshold_version"]), str(row["symbol"]),
