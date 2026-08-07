@@ -14,16 +14,16 @@ from registry import REPO_ROOT, load_factors, print_table, validate_registries
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     commands = root.add_subparsers(dest="command", required=True)
-    commands.add_parser("status", help="List registered factors")
-    show = commands.add_parser("show", help="Show one factor as JSON")
+    commands.add_parser("status")
+    show = commands.add_parser("show")
     show.add_argument("factor_id")
-    plan = commands.add_parser("plan", help="Create a versioned run manifest; does not run computation")
+    plan = commands.add_parser("plan", help="Create a run manifest; does not submit computation")
     plan.add_argument("factor_id")
     plan.add_argument("--run-id", required=True)
     plan.add_argument("--months", nargs="+", required=True)
     plan.add_argument("--exchange", choices=("SH", "SZ", "ALL"), required=True)
     plan.add_argument("--window", default="1000_1030")
-    plan.add_argument("--manifest", required=True, help="Point-in-time A-share input manifest")
+    plan.add_argument("--manifest", required=True)
     plan.add_argument("--notes", default="")
     return root
 
@@ -56,8 +56,8 @@ def main() -> int:
         "exchange": args.exchange,
         "signal_window": args.window,
         "input_manifest": str(Path(args.manifest).expanduser().resolve()),
-        "universe_rule": "point-in-time A-share stocks; ETFs excluded before factor calculation",
-        "prebook_impact": factor["affected_by_prebook_fix"],
+        "data_dependencies": factor["data_dependencies"],
+        "required_quality_gates": factor["required_quality_gates"],
         "implementation": factor["implementation"],
         "status": "planned",
         "notes": args.notes,

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "quality_gates": [
+    {
+      "id": "Q001",
+      "name": "点时点 A 股股票池",
+      "category": "data",
+      "pass_condition": "因子计算前排除 ETF，正式产物 ETF=0。"
+    },
+    {
+      "id": "Q002",
+      "name": "事件顺序与交易时段边界",
+      "category": "data",
+      "pass_condition": "row_id 严格递增；午休、隔日、集合竞价边界正确重置。"
+    },
+    {
+      "id": "Q003",
+      "name": "沪深事件语义与 safe pre-book",
+      "category": "data",
+      "pass_condition": "深圳无效 post-book 不覆盖最近有效盘口；上海主动余量不重复计作被动新增。",
+      "legacy_aliases": [
+        "PB01",
+        "PB01-A",
+        "PB01-B",
+        "PB01-C",
+        "PB01-D",
+        "PB01-E",
+        "PB01-SH"
+      ]
+    },
+    {
+      "id": "Q004",
+      "name": "点时点与无前视",
+      "category": "research_implementation",
+      "pass_condition": "特征、暴露、历史阈值和标签边界均只使用当时可得信息。"
+    },
+    {
+      "id": "Q005",
+      "name": "订单与成交守恒",
+      "category": "data",
+      "pass_condition": "无重复成交、负剩余量或成交撤单超过提交量；未匹配项单独解释。"
+    },
+    {
+      "id": "Q006",
+      "name": "串并行确定性",
+      "category": "software",
+      "pass_condition": "相同冻结样本逐字段或逐字节一致。"
+    },
+    {
+      "id": "Q007",
+      "name": "分片、指纹与断点续跑",
+      "category": "operations",
+      "pass_condition": "manifest 指纹一致才复用分片；完成标记与输入哈希齐全。"
+    },
+    {
+      "id": "Q008",
+      "name": "输出 schema 与依赖完整性",
+      "category": "software",
+      "pass_condition": "必需列、版本、输入依赖、结果路径及 supersedes 映射完整。"
+    }
+  ]
+}

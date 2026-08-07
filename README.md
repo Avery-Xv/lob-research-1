@@ -1,6 +1,6 @@
 # Active-Take Midprice Factor
 
-研究资产现已按因子 `F001...` 与实验 `E001...` 两条管线管理。新任务先查看
+研究资产现已按因子 `F001...` 与研究实验 `R001...` 两条管线管理。新任务先查看
 [`docs/RESEARCH_PIPELINES.md`](docs/RESEARCH_PIPELINES.md) 和 `research/` 注册表；
 旧 D/M/PB/AG/NP 编号仅作为迁移别名。
 

@@ -1,19 +1,662 @@
 {
-  "schema_version": 2,
-  "id_policy": "E + 三位流水号；按数据闸门、单因子复现、机制深化、收益检验排序。",
-  "updated_at": "2026-08-07",
+  "schema_version": 3,
+  "id_policy": "R + 三位流水号；只有具有研究问题、目标变量和可证伪判据的项目才获得 R 编号。",
   "experiments": [
-    {"id":"E001","slug":"exchange_event_semantics_gate","name":"沪深事件语义与 pre-book 正确性闸门","legacy_aliases":["PB01","PB01-SH"],"status":"ready","spec_version":"v2","theory_sources":["docs/沪深pre-book口径审计与重算计划.md"],"factor_dependencies":["F001","F005","F007","F008","F009"],"experiment_dependencies":[],"result_root":"results/experiments/E001","next_action":"12股人工审计、ETF=0、状态重置、串并行一致性；通过后才提交全量。"},
-    {"id":"E002","slug":"active_impact_replication","name":"主动成交价格冲击复现与扩样","legacy_aliases":["PB01-A","AG01"],"status":"gated","spec_version":"v1","theory_sources":["docs/EXPERIMENT_PLAN.md","docs/沪深pre-book口径审计与重算计划.md"],"factor_dependencies":["F001"],"experiment_dependencies":["E001"],"result_root":"results/experiments/E002","next_action":"先 202601-202602，再预注册扩展到 202604。"},
-    {"id":"E003","slug":"event_response_replication","name":"委托撤单成交响应复现","legacy_aliases":["PB01-B","D01-D03"],"status":"gated","spec_version":"v1","theory_sources":["docs/stylized-fact-4-6_日频因子手册.md"],"factor_dependencies":["F005"],"experiment_dependencies":["E001"],"result_root":"results/experiments/E003","next_action":"沪深分开报告事件覆盖与 raw 表现。"},
-    {"id":"E004","slug":"retained_impact_replication","name":"成交冲击保留与恢复复现","legacy_aliases":["PB01-C","SF46I07"],"status":"gated","spec_version":"v1","theory_sources":["docs/stylized-fact-4-6_日频因子手册.md"],"factor_dependencies":["F007"],"experiment_dependencies":["E001"],"result_root":"results/experiments/E004","next_action":"逐事件与 atomic-chain 均通过后接 raw 收益。"},
-    {"id":"E005","slug":"passive_gap_definition_audit","name":"被动价差供给定义审计","legacy_aliases":["PB01-D"],"status":"gated","spec_version":"v1","theory_sources":["docs/大价差占比因子逻辑文档.md"],"factor_dependencies":["F002"],"experiment_dependencies":["E001"],"result_root":"results/experiments/E005","next_action":"按预登记阈值固定 F002 定义，之后才解锁 F004。"},
-    {"id":"E006","slug":"large_order_surprise_raw","name":"主动大单流与意外的 raw 检验","legacy_aliases":["ID05","D04-D05"],"status":"ready","spec_version":"v1","theory_sources":["docs/stylized-fact-4-6_日频因子手册.md"],"factor_dependencies":["F006"],"experiment_dependencies":[],"result_root":"results/experiments/E006","next_action":"依次执行单文件、12股串并行、跨月全样本。"},
-    {"id":"E007","slug":"event_primitive_cross_exchange","name":"统一事件 primitive 沪深对照","legacy_aliases":["BATCH01"],"status":"gated","spec_version":"v2","theory_sources":["scripts/factors/experiment_batch_1/README.md"],"factor_dependencies":["F008","F009"],"experiment_dependencies":["E001"],"result_root":"results/experiments/E007","next_action":"当前路径重新提交沪市，再与已验证深市口径对齐。"},
-    {"id":"E008","slug":"minimal_event_mechanisms","name":"Event-LOB 最小机制实证","legacy_aliases":["ELOB01-04"],"status":"gated","spec_version":"v1","theory_sources":["docs/Event_LOB最小实证实验方案.md"],"factor_dependencies":["F008"],"experiment_dependencies":["E007"],"result_root":"results/experiments/E008","next_action":"复用一次事件投影完成四项直接目标。"},
-    {"id":"E009","slug":"non_parent_order_mechanisms","name":"非母单机制","legacy_aliases":["NP01-05","NPE01-05"],"status":"gated","spec_version":"v1","theory_sources":["docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"],"factor_dependencies":["F008","F009"],"experiment_dependencies":["E007","E008"],"result_root":"results/experiments/E009","next_action":"先直接目标，机制通过后再接收益。"},
-    {"id":"E010","slug":"depth_cancellation_response","name":"深档撤单与遮挡响应","legacy_aliases":["DR01-05"],"status":"gated","spec_version":"v1","theory_sources":["docs/近端大单遮挡与深档撤单响应因子设计文档.md"],"factor_dependencies":["F008"],"experiment_dependencies":["E008"],"result_root":"results/experiments/E010","next_action":"作为事件机制子方向执行。"},
-    {"id":"E011","slug":"parent_order_execution_stage","name":"母单结构与执行阶段","legacy_aliases":["MSI01-10"],"status":"gated","spec_version":"v1","theory_sources":["docs/母单结构与执行阶段_衍生因子研究手册.md"],"factor_dependencies":["F008","F009"],"experiment_dependencies":["E007"],"result_root":"results/experiments/E011","next_action":"分阶段构建，综合因子最后生成。"},
-    {"id":"E012","slug":"return_robustness_gate","name":"统一 raw 收益与稳健性闸门","legacy_aliases":["RG01"],"status":"gated","spec_version":"v1","theory_sources":["docs/EXPERIMENT_PLAN.md"],"factor_dependencies":[],"experiment_dependencies":["E008","E009","E011"],"result_root":"results/experiments/E012","next_action":"只接收机制验证通过且版本冻结的候选。"}
+    {
+      "id": "R001",
+      "name": "订单形态六机制基线",
+      "legacy_aliases": [
+        "M00",
+        "M1-M6"
+      ],
+      "status": "completed",
+      "research_question": "订单流、盘口、活动度和成交机会之间是否存在跨域稳定的条件机制？",
+      "factor_dependencies": [
+        "F013"
+      ],
+      "data_dependencies": [
+        "P002"
+      ],
+      "research_outputs": [
+        "直接目标 IC",
+        "九域异质性",
+        "继续/停止结论"
+      ],
+      "decision_rule": "M2/M3 原方向停止；M1/M6 仅作为后续控制与候选来源。",
+      "theory_sources": [
+        "docs/订单簿形态与非对称自刺激_增量因子手册.md"
+      ],
+      "result_root": "results/research/R001",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R002",
+      "name": "主动成交价格冲击跨月复现",
+      "legacy_aliases": [
+        "AG01"
+      ],
+      "status": "ready_after_factor",
+      "research_question": "F001 的极端组效应能否在 2026-02 至 04 延续，并在可执行口径下保持方向？",
+      "factor_dependencies": [
+        "F001"
+      ],
+      "data_dependencies": [],
+      "research_outputs": [
+        "5/10/15/30分钟 raw Rank IC",
+        "固定宽尾部收益",
+        "分月稳定性",
+        "可执行收益"
+      ],
+      "decision_rule": "多数月份同向，预注册期限尾部差稳定，且不由单日/单域/少数股票驱动。",
+      "theory_sources": [
+        "docs/EXPERIMENT_PLAN.md"
+      ],
+      "result_root": "results/research/R002",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R003",
+      "name": "主动大单流与历史意外的增量",
+      "legacy_aliases": [
+        "ID05"
+      ],
+      "status": "ready",
+      "research_question": "D05 历史意外相对原始主动流和 D04 条件残差是否具有可解释的直接目标或收益增量？",
+      "factor_dependencies": [
+        "F006"
+      ],
+      "data_dependencies": [],
+      "research_outputs": [
+        "活动/订单流直接目标",
+        "5/10/15/30分钟 raw 收益",
+        "跨月增量"
+      ],
+      "decision_rule": "至少跨两个月方向稳定，且 D05 相对 alf_raw 或 D04 有增量。",
+      "theory_sources": [
+        "docs/HANDOFF_D04_D06_NEXT_SESSION.md",
+        "docs/EXPERIMENT_PLAN.md"
+      ],
+      "result_root": "results/research/R003",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R004",
+      "name": "主动大单价格反应不足",
+      "legacy_aliases": [
+        "SF46I06",
+        "D06 intraday"
+      ],
+      "status": "definition_pending",
+      "research_question": "给定主动大单流，信号窗内价格反应不足是否预示后续延续或反转？",
+      "factor_dependencies": [
+        "F007"
+      ],
+      "data_dependencies": [],
+      "research_outputs": [
+        "二维状态或历史条件残差",
+        "后续价格响应"
+      ],
+      "decision_rule": "点时定义先冻结；不得使用 10:30 后价格构造信号。",
+      "theory_sources": [
+        "docs/stylized-fact-4-6_日频因子手册.md"
+      ],
+      "result_root": "results/research/R004",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R005",
+      "name": "成交冲击永久性与恢复",
+      "legacy_aliases": [
+        "SF46I07"
+      ],
+      "status": "ready_after_factor",
+      "research_question": "主动成交冲击在不同期限是延续、一次性还是反转，且沪深是否一致？",
+      "factor_dependencies": [
+        "F008"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "5/30/60秒直接响应",
+        "5/10/15/30分钟 raw 收益",
+        "逐事件与 atomic-chain 对照"
+      ],
+      "decision_rule": "分市场报告；机制路径通过后才解释收益。",
+      "theory_sources": [
+        "docs/stylized-fact-4-6_日频因子手册.md"
+      ],
+      "result_root": "results/research/R005",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R006",
+      "name": "主动流与被动承接四状态",
+      "legacy_aliases": [
+        "SF46I08"
+      ],
+      "status": "gated",
+      "research_question": "主动流与被动小单的一致、承接和吸收状态是否具有不同的冲击保留与未来响应？",
+      "factor_dependencies": [
+        "F006",
+        "F008",
+        "F009"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "四状态直接目标",
+        "承接成功/失败差异",
+        "raw 收益"
+      ],
+      "decision_rule": "不预设统一收益方向；先验证状态机制。",
+      "theory_sources": [
+        "docs/stylized-fact-4-6_日频因子手册.md"
+      ],
+      "result_root": "results/research/R006",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R007",
+      "name": "极端报价修复机制",
+      "legacy_aliases": [
+        "SF46I09"
+      ],
+      "status": "partial",
+      "research_question": "极薄价差内新增挡位是否更易再命中、成交移除并恢复原盘口？",
+      "factor_dependencies": [
+        "F010"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "存活率",
+        "再命中概率",
+        "完全消耗概率",
+        "报价恢复概率"
+      ],
+      "decision_rule": "买卖镜像、跨市场和预注册期限均报告；稀疏状态不作结论。",
+      "theory_sources": [
+        "docs/stylized-fact-4-6_日频因子手册.md"
+      ],
+      "result_root": "results/research/R007",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R008",
+      "name": "流动性条件化冲击",
+      "legacy_aliases": [
+        "SF46I10"
+      ],
+      "status": "partial",
+      "research_question": "价格、市值和新挡位深度如何条件化冲击的延续或反转？",
+      "factor_dependencies": [
+        "F011"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "价格×市值×深度分层响应",
+        "跨市场异质性",
+        "raw 收益"
+      ],
+      "decision_rule": "分层用于机制异质性，不以事后挑选成功域合并。",
+      "theory_sources": [
+        "docs/stylized-fact-4-6_日频因子手册.md"
+      ],
+      "result_root": "results/research/R008",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R009",
+      "name": "异常价格冲击增量",
+      "legacy_aliases": [
+        "SF46I11"
+      ],
+      "status": "gated",
+      "research_question": "控制严格滞后的正常订单流、深度与价差关系后，异常冲击是否预测流动性、波动或收益？",
+      "factor_dependencies": [
+        "F012"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "异常成交/委托冲击",
+        "直接目标",
+        "raw 收益"
+      ],
+      "decision_rule": "必须同时报告未残差化 primitive；参数只用历史训练。",
+      "theory_sources": [
+        "docs/stylized-fact-4-6_日频因子手册.md"
+      ],
+      "result_root": "results/research/R009",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R010",
+      "name": "Imbalance × spread 与下一次中价变化",
+      "legacy_aliases": [
+        "ELOB01"
+      ],
+      "status": "planned",
+      "research_question": "不同 spread 下，Top1 imbalance 是否单调改变下一次有效中价上涨概率？",
+      "factor_dependencies": [],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "10/20分位曲线",
+        "logit 交互",
+        "block-bootstrap 区间"
+      ],
+      "decision_rule": "关系需跨股票日等权、分月和微观结构组稳定。",
+      "theory_sources": [
+        "docs/Event_LOB最小实证实验方案.md"
+      ],
+      "result_root": "results/research/R010",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R011",
+      "name": "多跳价格响应",
+      "legacy_aliases": [
+        "ELOB02"
+      ],
+      "status": "planned",
+      "research_question": "imbalance/spread 信号在未来多次中价跳动中表现为持续、一次性还是反转？",
+      "factor_dependencies": [],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "1/2/3/5/10跳累计响应",
+        "形状分类"
+      ],
+      "decision_rule": "按预先定义的响应形状分类并报告置信区间。",
+      "theory_sources": [
+        "docs/Event_LOB最小实证实验方案.md"
+      ],
+      "result_root": "results/research/R011",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R012",
+      "name": "信号兑现时间",
+      "legacy_aliases": [
+        "ELOB03"
+      ],
+      "status": "planned",
+      "research_question": "盘口信号在自然时间内多久兑现，且上涨/下跌竞争方向如何？",
+      "factor_dependencies": [],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "1/5/10/30/60秒兑现概率",
+        "中位等待时间",
+        "Kaplan-Meier 曲线"
+      ],
+      "decision_rule": "事件时间与自然时间均报告，竞争风险分开处理。",
+      "theory_sources": [
+        "docs/Event_LOB最小实证实验方案.md"
+      ],
+      "result_root": "results/research/R012",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R013",
+      "name": "Add/Cancel/Trade 事件价格 IRF",
+      "legacy_aliases": [
+        "ELOB04"
+      ],
+      "status": "planned",
+      "research_question": "Add、Cancel、Trade 的价格影响强度和持久性是否不同，并受 imbalance/spread 调节？",
+      "factor_dependencies": [],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "事件时钟 IRF",
+        "自然时间 IRF",
+        "事件类型交互"
+      ],
+      "decision_rule": "规模按事件前队列标准化；stock-day 等权为主，pooled event 仅作对照。",
+      "theory_sources": [
+        "docs/Event_LOB最小实证实验方案.md"
+      ],
+      "result_root": "results/research/R013",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R014",
+      "name": "成交机会惊奇",
+      "legacy_aliases": [
+        "NP01"
+      ],
+      "status": "planned",
+      "research_question": "控制普通主动流后，成交机会差是否仍预测未来主动流、活动度及收益？",
+      "factor_dependencies": [
+        "F014"
+      ],
+      "data_dependencies": [
+        "P002"
+      ],
+      "research_outputs": [
+        "未来主动流增量",
+        "活动度",
+        "通过后收益"
+      ],
+      "decision_rule": "先复现约 0.009 的域中性订单流增量；失败则不调参。",
+      "theory_sources": [
+        "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"
+      ],
+      "result_root": "results/research/R014",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R015",
+      "name": "总体可成交性",
+      "legacy_aliases": [
+        "NP02"
+      ],
+      "status": "planned",
+      "research_question": "总体可成交性在控制当前活动度和盘口后是否预测未来活动、波动和流动性？",
+      "factor_dependencies": [
+        "F014"
+      ],
+      "data_dependencies": [
+        "P002"
+      ],
+      "research_outputs": [
+        "事件数",
+        "成交量",
+        "波动",
+        "点差与深度"
+      ],
+      "decision_rule": "若只复制当前成交量和点差则停止。",
+      "theory_sources": [
+        "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"
+      ],
+      "result_root": "results/research/R015",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R016",
+      "name": "主动流与成交机会确认/冲突",
+      "legacy_aliases": [
+        "NP03"
+      ],
+      "status": "planned",
+      "research_question": "M1 与成交机会强弱的确认/冲突状态是否预测订单流衰减或价格反转？",
+      "factor_dependencies": [
+        "F014"
+      ],
+      "data_dependencies": [
+        "P002"
+      ],
+      "research_outputs": [
+        "连续交互",
+        "四状态排序",
+        "衰减与收益"
+      ],
+      "decision_rule": "阈值预注册；若依赖目标月阈值或样本稀疏则停止。",
+      "theory_sources": [
+        "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"
+      ],
+      "result_root": "results/research/R016",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R017",
+      "name": "盘口与成交流背离",
+      "legacy_aliases": [
+        "NP04"
+      ],
+      "status": "planned",
+      "research_question": "盘口状态持续但主动流反向响应的背离是否解释未来盘口、订单流、波动与收益？",
+      "factor_dependencies": [
+        "F014"
+      ],
+      "data_dependencies": [
+        "P002"
+      ],
+      "research_outputs": [
+        "二维状态",
+        "条件残差",
+        "直接目标与收益"
+      ],
+      "decision_rule": "若只是盘口不平衡重标度则停止。",
+      "theory_sources": [
+        "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"
+      ],
+      "result_root": "results/research/R017",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R018",
+      "name": "对称撤单强度与流动性风险",
+      "legacy_aliases": [
+        "NP05"
+      ],
+      "status": "planned",
+      "research_question": "无方向撤单强度是否跨域预测波动、点差扩大和深度下降？",
+      "factor_dependencies": [
+        "F014"
+      ],
+      "data_dependencies": [
+        "P002"
+      ],
+      "research_outputs": [
+        "波动",
+        "点差",
+        "深度",
+        "镜像结果"
+      ],
+      "decision_rule": "对称版本跨域有效且镜像通过；仅带方向旧版本有效则停止。",
+      "theory_sources": [
+        "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"
+      ],
+      "result_root": "results/research/R018",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R019",
+      "name": "非母单事件机制深化",
+      "legacy_aliases": [
+        "NPE01-05"
+      ],
+      "status": "gated",
+      "research_question": "吸收、冲击效率、历史恢复、热度惊奇及时钟差异能否解释普通主动流之外的未来状态？",
+      "factor_dependencies": [
+        "F015"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "五类直接目标",
+        "事件/秒时钟对照",
+        "通过后收益"
+      ],
+      "decision_rule": "先做直接目标；不因单月或单域显著进入收益阶段。",
+      "theory_sources": [
+        "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"
+      ],
+      "result_root": "results/research/R019",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R020",
+      "name": "近端大单遮挡机制",
+      "legacy_aliases": [
+        "DR01-05"
+      ],
+      "status": "planned",
+      "research_question": "近端异常被动大单是否降低同侧深档既有订单成交机会并提高异常撤单风险？",
+      "factor_dependencies": [
+        "F016"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "事件研究",
+        "撤单/成交风险模型",
+        "剂量/距离/持续性效应",
+        "日频横截面"
+      ],
+      "decision_rule": "必须同时观察撤单风险提高、成交或触价风险下降、规模效应增强；否则不进入复杂因子优化。",
+      "theory_sources": [
+        "docs/近端大单遮挡与深档撤单响应因子设计文档.md"
+      ],
+      "result_root": "results/research/R020",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R021",
+      "name": "执行链集中度与碎片化增量",
+      "legacy_aliases": [
+        "MSI-A",
+        "MSI01",
+        "MSI02"
+      ],
+      "status": "planned",
+      "research_question": "控制 M1 和活动度后，链集中度、碎片化与熵是否具有结构增量？",
+      "factor_dependencies": [
+        "F017",
+        "F013"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "条件增量",
+        "解释度",
+        "跨域跨月稳定性"
+      ],
+      "decision_rule": "若 P1 失败，不继续复杂隐藏执行片段研究。",
+      "theory_sources": [
+        "docs/母单结构与执行阶段_衍生因子研究手册.md"
+      ],
+      "result_root": "results/research/R021",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R022",
+      "name": "执行节奏与继续/结束风险",
+      "legacy_aliases": [
+        "MSI-B",
+        "MSI03",
+        "MSI04"
+      ],
+      "status": "gated",
+      "research_question": "严格在线的节奏变化能否预测片段继续或结束？",
+      "factor_dependencies": [
+        "F017"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "节奏加速度",
+        "continuation probability",
+        "termination hazard"
+      ],
+      "decision_rule": "模型只用历史；样本外优于简单持续时间基线才继续。",
+      "theory_sources": [
+        "docs/母单结构与执行阶段_衍生因子研究手册.md"
+      ],
+      "result_root": "results/research/R022",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R023",
+      "name": "边际冲击、穿透恢复与吸收韧性",
+      "legacy_aliases": [
+        "MSI-C",
+        "MSI05",
+        "MSI06",
+        "MSI07"
+      ],
+      "status": "gated",
+      "research_question": "相同主动流下，执行阶段的边际冲击、对手补给和深度恢复是否不同？",
+      "factor_dependencies": [
+        "F017"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "冲击衰减",
+        "穿透恢复",
+        "吸收韧性"
+      ],
+      "decision_rule": "直接目标跨月稳定且伪触发对照通过。",
+      "theory_sources": [
+        "docs/母单结构与执行阶段_衍生因子研究手册.md"
+      ],
+      "result_root": "results/research/R023",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R024",
+      "name": "推断执行片段可识别性",
+      "legacy_aliases": [
+        "MSI-D",
+        "MSI08",
+        "MSI09"
+      ],
+      "status": "gated",
+      "research_question": "规则型和频域结构能否识别可复现的市场级执行片段，而非普通活动度？",
+      "factor_dependencies": [
+        "F017"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "弱监督 precision/recall",
+        "阈值稳定性",
+        "置乱 placebo"
+      ],
+      "decision_rule": "规则型基线优于简单时间间隔且置乱后效果消失。",
+      "theory_sources": [
+        "docs/母单结构与执行阶段_衍生因子研究手册.md"
+      ],
+      "result_root": "results/research/R024",
+      "spec_version": "v1"
+    },
+    {
+      "id": "R025",
+      "name": "执行结构综合增量与收益",
+      "legacy_aliases": [
+        "MSI-E",
+        "MSI10"
+      ],
+      "status": "gated",
+      "research_question": "多个通过验证的结构残差组合后，是否在跨月、跨域及成本后仍有增量？",
+      "factor_dependencies": [
+        "F017",
+        "F013"
+      ],
+      "data_dependencies": [
+        "P001"
+      ],
+      "research_outputs": [
+        "结构增量总分",
+        "raw 收益",
+        "成本后收益"
+      ],
+      "decision_rule": "只纳入跨月稳定单项；不按目标月优化权重。",
+      "theory_sources": [
+        "docs/母单结构与执行阶段_衍生因子研究手册.md"
+      ],
+      "result_root": "results/research/R025",
+      "spec_version": "v1"
+    }
   ]
 }

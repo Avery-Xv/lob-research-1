@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inspect experiment lineage and create manifests tied to factor runs."""
+"""Inspect research experiments and bind them to concrete factor runs."""
 
 from __future__ import annotations
 
@@ -8,17 +8,17 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from registry import REPO_ROOT, load_experiments, load_factors, print_table, validate_registries
+from registry import REPO_ROOT, load_experiments, load_factors, print_table, required_gates, validate_registries
 
 
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     commands = root.add_subparsers(dest="command", required=True)
-    commands.add_parser("status", help="List registered experiments")
-    show = commands.add_parser("show", help="Show one experiment as JSON")
-    show.add_argument("experiment_id")
-    plan = commands.add_parser("plan", help="Create a versioned experiment manifest")
-    plan.add_argument("experiment_id")
+    commands.add_parser("status")
+    show = commands.add_parser("show")
+    show.add_argument("research_id")
+    plan = commands.add_parser("plan", help="Create a research manifest; does not submit computation")
+    plan.add_argument("research_id")
     plan.add_argument("--run-id", required=True)
     plan.add_argument("--factor-run", action="append", default=[], metavar="FACTOR_ID=MANIFEST")
     plan.add_argument("--notes", default="")
@@ -26,7 +26,7 @@ def parser() -> argparse.ArgumentParser:
 
 
 def parse_factor_runs(values: list[str]) -> dict[str, str]:
-    parsed: dict[str, str] = {}
+    parsed = {}
     for value in values:
         if "=" not in value:
             raise SystemExit(f"Invalid --factor-run {value!r}; expected FACTOR_ID=MANIFEST")
@@ -45,9 +45,9 @@ def main() -> int:
     if args.command == "status":
         print_table(list(experiments.values()), "spec_version")
         return 0
-    if args.experiment_id not in experiments:
-        raise SystemExit(f"Unknown experiment: {args.experiment_id}")
-    experiment = experiments[args.experiment_id]
+    if args.research_id not in experiments:
+        raise SystemExit(f"Unknown research experiment: {args.research_id}")
+    experiment = experiments[args.research_id]
     if args.command == "show":
         print(json.dumps(experiment, ensure_ascii=False, indent=2))
         return 0
@@ -55,28 +55,26 @@ def main() -> int:
     missing = sorted(set(experiment["factor_dependencies"]) - factor_runs.keys())
     unknown = sorted(set(factor_runs) - factors.keys())
     if missing or unknown:
-        messages = []
-        if missing:
-            messages.append("missing factor runs: " + ", ".join(missing))
-        if unknown:
-            messages.append("unknown factors: " + ", ".join(unknown))
-        raise SystemExit("; ".join(messages))
+        raise SystemExit("; ".join(filter(None, ["missing factor runs: " + ", ".join(missing) if missing else "", "unknown factors: " + ", ".join(unknown) if unknown else ""])))
     for factor_id, manifest_path in factor_runs.items():
         payload = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
         if payload.get("factor_id") != factor_id:
             raise SystemExit(f"Factor manifest mismatch: expected {factor_id}, got {payload.get('factor_id')}")
-    run_dir = REPO_ROOT / "runs" / "experiments" / args.experiment_id / args.run_id
+    run_dir = REPO_ROOT / "runs" / "research" / args.research_id / args.run_id
     run_manifest = run_dir / "manifest.json"
     if run_manifest.exists():
         raise SystemExit(f"Refusing to overwrite existing run: {run_manifest}")
     payload = {
-        "kind": "experiment_run",
-        "experiment_id": args.experiment_id,
+        "kind": "research_run",
+        "research_id": args.research_id,
         "spec_version": experiment["spec_version"],
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "research_question": experiment["research_question"],
+        "decision_rule": experiment["decision_rule"],
         "factor_runs": factor_runs,
-        "experiment_dependencies": experiment["experiment_dependencies"],
-        "primary_evaluation": "raw_non_neutralized",
+        "data_dependencies": experiment["data_dependencies"],
+        "required_quality_gates": required_gates(experiment["factor_dependencies"], experiment["data_dependencies"]),
+        "research_outputs": experiment["research_outputs"],
         "result_root": experiment["result_root"],
         "status": "planned",
         "notes": args.notes,
