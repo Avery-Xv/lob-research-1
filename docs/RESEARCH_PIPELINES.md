@@ -62,6 +62,8 @@ PB01、BATCH01、RG01 没有映射到 `R`，因为它们分别属于口径修复
 
 ## 5. 使用方式
 
+计算前必须先阅读 [`COMPUTE_PREFLIGHT.md`](COMPUTE_PREFLIGHT.md)，并使用其中的 PASS receipt；仅列出注册表不代表允许提交。
+
 ```bash
 conda_lob/bin/python scripts/pipelines/factor_pipeline.py status
 conda_lob/bin/python scripts/pipelines/factor_pipeline.py show F001
@@ -76,15 +78,16 @@ conda_lob/bin/python scripts/pipelines/factor_pipeline.py plan F001 \
   --run-id 202601_202604_all_safe_v2 \
   --months 202601 202602 202603 202604 \
   --exchange ALL --window 1000_1030 \
-  --manifest data/manifests/v4_a_share_stock_paths_202601_202604.txt
+  --manifest data/manifests/v4_a_share_stock_paths_202601_202604.txt \
+  --audit-receipt audits/Q003/q003_202601_12x3_v1/preflight_receipt.json
 ```
 
-manifest 会自动带出该因子的 `P` 依赖与 `Q` 质量门。质量门通过后，再把实际因子 run 绑定到研究实验：
+factor manifest 只有在凭证、清单月份和当前实现全部匹配后才写为 `ready_to_submit`。计算完成后先用 `complete_factor_run.py` 封存输出；研究实验只能绑定完成凭证：
 
 ```bash
 conda_lob/bin/python scripts/pipelines/experiment_pipeline.py plan R002 \
   --run-id 202601_202604_all_v1 \
-  --factor-run F001=runs/factors/F001/202601_202604_all_safe_v2/manifest.json
+  --factor-run F001=runs/factors/F001/202601_202604_all_safe_v2/completion.json
 ```
 
 研究任务输出写入 `results/research/<R-ID>/...`。工程审计报告应随对应 factor/data run 保存，不进入 `results/research/`，避免再次把工程完成状态误写成研究结论。

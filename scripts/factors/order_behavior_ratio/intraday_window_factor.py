@@ -146,10 +146,11 @@ WITH raw_events AS (
         time,
         row_id,
         source_action,
-        source_order_id,
-        source_trade_id,
+        source_recid,
         source_buy_order_id,
         source_sell_order_id,
+        CASE WHEN source_side = 'B' THEN source_buy_order_id
+             WHEN source_side = 'S' THEN source_sell_order_id END AS source_order_id,
         source_side,
         source_volume
     FROM read_parquet(?, filename=true)
@@ -165,7 +166,7 @@ trade_rows AS (
             ELSE NULL
         END AS active_order_id,
         row_number() OVER (
-            PARTITION BY symbol, date, coalesce(source_trade_id, -row_id)
+            PARTITION BY symbol, date, coalesce(source_recid, -row_id)
             ORDER BY row_id
         ) AS trade_occurrence
     FROM raw_events
@@ -178,7 +179,7 @@ trades AS (
     WHERE trade_occurrence = 1
 ),
 active_order_ids AS (
-    SELECT DISTINCT symbol, date, active_order_id
+    SELECT DISTINCT symbol, date, source_side AS active_side, active_order_id
     FROM trades
     WHERE active_order_id IS NOT NULL
 ),
@@ -194,7 +195,7 @@ trade_agg AS (
         date,
         sum(source_volume)::BIGINT AS trade_qty,
         count(*)::BIGINT AS trade_count,
-        count(DISTINCT active_order_id)::BIGINT AS aggr_order_count,
+        count(DISTINCT (source_side, active_order_id))::BIGINT AS aggr_order_count,
         coalesce(sum(source_volume) FILTER (WHERE active_order_id IS NULL), 0)::BIGINT
             AS unidentified_aggr_trade_qty,
         count(*) FILTER (WHERE active_order_id IS NULL)::BIGINT
@@ -206,7 +207,7 @@ window_order_rows AS (
     SELECT
         *,
         row_number() OVER (
-            PARTITION BY symbol, date, source_order_id
+            PARTITION BY symbol, date, source_side, source_order_id
             ORDER BY row_id
         ) AS order_occurrence
     FROM raw_events
@@ -222,6 +223,7 @@ valid_order_adds AS (
     LEFT JOIN active_order_ids a
       ON a.symbol = o.symbol
      AND a.date = o.date
+     AND a.active_side = o.source_side
      AND a.active_order_id = o.source_order_id
     WHERE o.source_order_id IS NOT NULL
       AND o.source_volume > 0

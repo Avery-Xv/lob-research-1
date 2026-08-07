@@ -4,12 +4,15 @@
 
 - `scripts/factors/<factor_name>/` contains each factor’s daily and intraday calculators; put new factors in their own named subdirectory.
 - `scripts/backtests/` contains cross-sectional backtests.
+- `research/` is the authoritative F/R/P/Q registry; engineering checks never receive R IDs.
+- `scripts/audits/` creates real-data evidence; `scripts/pipelines/` enforces preflight, factor-run, completion, and research-run lineage.
+- `audits/` stores immutable audit receipts; `runs/factors/` and `runs/research/` store immutable run manifests.
 - `data/cache/` stores reproducible intermediate tables; `data/processed/` stores full-market factor outputs.
 - `data/manifests/`, `data/recovery/`, and `data/samples/` contain input lists, recovery runs, and small validation datasets.
 - `results/daily/` and `results/intraday/` contain generated reports.
 - Raw LOB parquet data is external under `/hdd_data/lob`; do not copy it into this repository.
 
-There is currently no dedicated automated test directory. Add tests under `tests/`, mirroring the script area being tested, when introducing reusable logic.
+Automated tests live under `tests/`, mirroring the script area being tested. Every reusable event-state change must extend the relevant regression suite.
 
 ## Build, Test, and Development Commands
 
@@ -17,6 +20,7 @@ Use the repository environment rather than system Python:
 
 ```bash
 conda_lob/bin/python -m compileall -q scripts/factors scripts/backtests
+conda_lob/bin/python -m pytest -q --import-mode=importlib tests/factors tests/pipelines tests/audits
 conda_lob/bin/python scripts/factors/active_take_midprice/intraday_window_factor.py --help
 conda_lob/bin/python scripts/backtests/backtest_open_to_open.py --help
 ```
@@ -51,6 +55,12 @@ zero ETF symbols before a full-market run.
 ## Testing Guidelines
 
 For factor changes, validate event counts and values on one file, then compare serial and parallel outputs on a small identical sample. For backtests, verify factor time, entry time, and exit time explicitly. Never filter using future return-window information. Review `data/README.md` and the Shanghai `FULL`/`PARTIAL` linkage notes in `README.md` before using order-record links.
+
+## Mandatory Compute Preflight
+
+A factor job may be submitted only from a `ready_to_submit` manifest created by `scripts/pipelines/factor_pipeline.py` with a PASS audit receipt. The receipt must certify the exact input-manifest hash, current implementation hashes, Q001-Q008, both exchanges, and at least 20 raw traced orders per exchange. Never bypass this gate with an unrestricted parquet glob.
+
+Research jobs may consume only `completed_audited` factor completions created by `scripts/pipelines/complete_factor_run.py`; a planned or running factor manifest is not research input. Outputs and manifests are append-only: use a new run ID instead of overwriting.
 
 ## Shanghai/Shenzhen Immediate-Fill Handling
 
@@ -92,4 +102,4 @@ neutralized specification silently replace the raw baseline.
 
 ## Commit & Pull Request Guidelines
 
-No Git history is present, so no repository-specific convention can be inferred. Use concise imperative commits such as `Fix point-in-time universe filter`. Pull requests should describe the factor definition, time boundaries, data universe, leakage controls, validation commands, and any regenerated artifacts. Include compact before/after metrics for behavioral changes; screenshots are unnecessary for this non-UI project.
+Use concise imperative commits and preserve the F/R/P/Q lineage in commit messages when relevant. Use concise imperative commits such as `Fix point-in-time universe filter`. Pull requests should describe the factor definition, time boundaries, data universe, leakage controls, validation commands, and any regenerated artifacts. Include compact before/after metrics for behavioral changes; screenshots are unnecessary for this non-UI project.

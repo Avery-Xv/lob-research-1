@@ -1,0 +1,46 @@
+{
+  "created_at": "2026-08-02T21:08:35.778600+08:00",
+  "v4_root": "/hdd_data/lob/event_depth10_v4",
+  "months": [
+    "202601",
+    "202602",
+    "202603",
+    "202604"
+  ],
+  "manifest": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202601_202604.txt",
+  "universe_rule": "point-in-time Shanghai/Shenzhen A shares only: SecuCategory=1, SecuMarket in (83,90), listed by month end, and not terminated before month start",
+  "security_type_whitelist": {
+    "SecuCategory": [
+      1
+    ],
+    "SecuMarket": [
+      83,
+      90
+    ]
+  },
+  "included_files": 20765,
+  "included_symbols": 5206,
+  "output_etf_symbols": 0,
+  "month_stats": {
+    "202601": {
+      "all_v4_files": 6600,
+      "included_stock_files": 5185,
+      "excluded_non_stock_or_inactive_files": 1415
+    },
+    "202602": {
+      "all_v4_files": 6627,
+      "included_stock_files": 5186,
+      "excluded_non_stock_or_inactive_files": 1441
+    },
+    "202603": {
+      "all_v4_files": 6654,
+      "included_stock_files": 5191,
+      "excluded_non_stock_or_inactive_files": 1463
+    },
+    "202604": {
+      "all_v4_files": 6703,
+      "included_stock_files": 5203,
+      "excluded_non_stock_or_inactive_files": 1500
+    }
+  }
+}

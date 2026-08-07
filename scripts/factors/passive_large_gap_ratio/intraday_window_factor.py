@@ -170,7 +170,7 @@ orders AS (
             ELSE NULL
         END AS initial_gap,
         row_number() OVER (
-            PARTITION BY symbol, date,
+            PARTITION BY symbol, date, source_side,
                 CASE WHEN source_side = 'B' THEN source_buy_order_id
                      WHEN source_side = 'S' THEN source_sell_order_id END
             ORDER BY row_id

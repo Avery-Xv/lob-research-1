@@ -8,6 +8,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from audit_receipt import sha256
+from complete_factor_run import hash_output
 from registry import REPO_ROOT, load_experiments, load_factors, print_table, required_gates, validate_registries
 
 
@@ -29,7 +31,7 @@ def parse_factor_runs(values: list[str]) -> dict[str, str]:
     parsed = {}
     for value in values:
         if "=" not in value:
-            raise SystemExit(f"Invalid --factor-run {value!r}; expected FACTOR_ID=MANIFEST")
+            raise SystemExit(f"Invalid --factor-run {value!r}; expected FACTOR_ID=COMPLETION")
         factor_id, manifest = value.split("=", 1)
         parsed[factor_id] = str(Path(manifest).expanduser().resolve())
     return parsed
@@ -56,10 +58,17 @@ def main() -> int:
     unknown = sorted(set(factor_runs) - factors.keys())
     if missing or unknown:
         raise SystemExit("; ".join(filter(None, ["missing factor runs: " + ", ".join(missing) if missing else "", "unknown factors: " + ", ".join(unknown) if unknown else ""])))
-    for factor_id, manifest_path in factor_runs.items():
-        payload = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
-        if payload.get("factor_id") != factor_id:
-            raise SystemExit(f"Factor manifest mismatch: expected {factor_id}, got {payload.get('factor_id')}")
+    for factor_id, completion_path in factor_runs.items():
+        payload = json.loads(Path(completion_path).read_text(encoding="utf-8"))
+        if payload.get("factor_id") != factor_id or payload.get("status") != "completed_audited":
+            raise SystemExit(f"Factor completion mismatch or not audited: expected {factor_id}")
+        run_manifest = Path(payload["factor_run_manifest"])
+        if sha256(run_manifest) != payload["factor_run_manifest_sha256"]:
+            raise SystemExit(f"Factor run manifest changed after completion: {factor_id}")
+        for output in payload.get("outputs", []):
+            output_path = Path(output["path"])
+            if not output_path.exists() or hash_output(output_path) != output["sha256"]:
+                raise SystemExit(f"Factor output missing or changed: {factor_id}: {output_path}")
     run_dir = REPO_ROOT / "runs" / "research" / args.research_id / args.run_id
     run_manifest = run_dir / "manifest.json"
     if run_manifest.exists():

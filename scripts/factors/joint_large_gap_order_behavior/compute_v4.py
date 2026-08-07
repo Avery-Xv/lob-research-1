@@ -253,7 +253,6 @@ def compute_one(
                 source_side,
                 source_price,
                 source_volume,
-                source_link_status,
                 CASE WHEN array_length(bid_px) > 0 THEN bid_px[1] END::DOUBLE AS bid1,
                 CASE WHEN array_length(ask_px) > 0 THEN ask_px[1] END::DOUBLE AS ask1
             FROM read_parquet({path_literal})
@@ -338,7 +337,7 @@ def compute_one(
                             THEN source_price - pre_ask1
                     END AS initial_gap,
                     row_number() OVER (
-                        PARTITION BY date,
+                        PARTITION BY date, source_side,
                             CASE
                                 WHEN source_side = 'B' THEN source_buy_order_id
                                 WHEN source_side = 'S' THEN source_sell_order_id
@@ -522,6 +521,7 @@ def compute_one(
             SELECT DISTINCT
                 w.window_name,
                 t.date,
+                t.source_side AS active_side,
                 CASE
                     WHEN t.source_side = 'B' THEN t.source_buy_order_id
                     WHEN t.source_side = 'S' THEN t.source_sell_order_id
@@ -543,13 +543,14 @@ def compute_one(
                 SELECT
                     w.window_name,
                     e.date,
+                    e.source_side AS order_side,
                     e.source_volume,
                     CASE
                         WHEN e.source_side = 'B' THEN e.source_buy_order_id
                         WHEN e.source_side = 'S' THEN e.source_sell_order_id
                     END AS order_id,
                     row_number() OVER (
-                        PARTITION BY w.window_name, e.date,
+                        PARTITION BY w.window_name, e.date, e.source_side,
                             CASE
                                 WHEN e.source_side = 'B' THEN e.source_buy_order_id
                                 WHEN e.source_side = 'S' THEN e.source_sell_order_id
@@ -585,7 +586,7 @@ def compute_one(
                     date,
                     sum(source_volume)::BIGINT AS trade_qty,
                     count(*)::BIGINT AS trade_count,
-                    count(DISTINCT active_order_id)::BIGINT AS aggr_order_count,
+                    count(DISTINCT (source_side, active_order_id))::BIGINT AS aggr_order_count,
                     coalesce(sum(source_volume) FILTER (
                         WHERE active_order_id IS NULL
                     ), 0)::BIGINT AS unidentified_aggr_trade_qty,
@@ -623,6 +624,7 @@ def compute_one(
                 LEFT JOIN ob_active_ids a
                   ON a.window_name = o.window_name
                  AND a.date = o.date
+                 AND a.active_side = o.order_side
                  AND a.active_order_id = o.order_id
                 GROUP BY o.window_name, o.date
             ),

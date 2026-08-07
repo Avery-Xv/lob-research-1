@@ -67,8 +67,7 @@ def test_compute_one_excludes_active_order_adds_before_and_after_trades(
             time BIGINT,
             row_id BIGINT,
             source_action VARCHAR,
-            source_order_id BIGINT,
-            source_trade_id BIGINT,
+            source_recid BIGINT,
             source_buy_order_id BIGINT,
             source_sell_order_id BIGINT,
             source_side VARCHAR,
@@ -77,19 +76,20 @@ def test_compute_one_excludes_active_order_adds_before_and_after_trades(
         """
     )
     con.executemany(
-        "INSERT INTO events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
             # True passive orders.
-            (20260105, 100001000, 1, "ORDER_ADD", 10, None, None, None, "B", 1000),
-            (20260105, 100002000, 2, "ORDER_ADD", 40, None, None, None, "S", 500),
+            (20260105, 100001000, 1, "ORDER_ADD", 1, 10, None, "B", 1000),
+            (20260105, 100002000, 2, "ORDER_ADD", 2, None, 30, "S", 500),
+            # Same numeric ID as the later active buy, but opposite side: still passive.
             # Fully executed Shanghai aggressive sell: TRADE without ORDER_ADD.
-            (20260105, 100003000, 3, "TRADE", None, 101, 10, 20, "S", 300),
+            (20260105, 100003000, 3, "TRADE", 101, 10, 20, "S", 300),
             # Shanghai aggressive buy: TRADE followed by published remainder.
-            (20260105, 100004000, 4, "TRADE", None, 102, 30, 40, "B", 200),
-            (20260105, 100004000, 5, "ORDER_ADD", 30, None, None, None, "B", 500),
+            (20260105, 100004000, 4, "TRADE", 102, 30, 40, "B", 200),
+            (20260105, 100004000, 5, "ORDER_ADD", 5, 30, None, "B", 500),
             # Shenzhen aggressive buy: ORDER_ADD followed by immediate TRADE.
-            (20260105, 100005000, 6, "ORDER_ADD", 50, None, None, None, "B", 400),
-            (20260105, 100005000, 7, "TRADE", None, 103, 50, 40, "B", 400),
+            (20260105, 100005000, 6, "ORDER_ADD", 6, 50, None, "B", 400),
+            (20260105, 100005000, 7, "TRADE", 103, 50, 40, "B", 400),
         ],
     )
     escaped_path = str(parquet).replace("'", "''")
