@@ -1,0 +1,27 @@
+{
+  "kind": "data_product_legacy_import",
+  "import_id": "LI-P001-001",
+  "item_id": "P001",
+  "status": "completed_audited_legacy_import",
+  "created_at": "2026-08-07T07:25:26.688771+00:00",
+  "source": "/home/avery/lob_test/results/intraday/experiment_batch_1/mechanism_analysis_202601_202602_sz_v2_safe_prebook",
+  "source_sha256": "dc2e28d43672cdfe57932a4eac71ddbcb94c95004eb91fbac240cf8d20ae036f",
+  "destination": "/home/avery/lob-research-1/data/cache/imported/P001/sz_safe_prebook_202601_202602_first_layer",
+  "destination_sha256": "dc2e28d43672cdfe57932a4eac71ddbcb94c95004eb91fbac240cf8d20ae036f",
+  "copy_semantics": "copied; legacy source preserved",
+  "scope": {
+    "exchange": "SZ",
+    "months": [
+      "202601",
+      "202602"
+    ],
+    "stock_month_files": 5764
+  },
+  "definition": "experiment_batch_1_v2_safe_prebook_20260807",
+  "current_code_sha256": "0475eeecf4665bbc903e7d4737f3a112410772ee45488460b64b12d99fa3d7b0",
+  "limitations": [
+    "First-layer features only",
+    "SH and future-return outputs are absent",
+    "Raw 101GB lifecycle shards were verified but not duplicated"
+  ]
+}

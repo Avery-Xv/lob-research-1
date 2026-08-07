@@ -1,0 +1,4 @@
+interface:
+  display_name: "V4 LOB 沪深语义"
+  short_description: "审计沪深 V4 事件字段、订单键、盘口状态与点时语义"
+  default_prompt: "Use $v4-lob-sh-sz-semantics to inspect this V4 LOB factor for Shanghai/Shenzhen event-order, field, and point-in-time errors."

@@ -1,0 +1,25 @@
+{
+  "kind": "sanitized_legacy_data_product",
+  "import_id": "LI-P002-001",
+  "item_id": "P002",
+  "status": "completed_audited_legacy_import",
+  "created_at": "2026-08-07T07:25:26.398730+00:00",
+  "source": "/home/avery/lob_test/data/cache/order_shape_mechanism/batch_a_medium300_202601_v1",
+  "source_sha256": "e90ab3ef6e254a0052558539043724da52e331ca6198d3d9f3ce5d8b38299102",
+  "destination": "/home/avery/lob-research-1/data/cache/imported/P002/batch_a_medium300_202601_safe_columns",
+  "destination_sha256": "2d841b30f360ee1639619b786dc2c25aa168de231b87b361b5d562b90dcfb5f2",
+  "copy_semantics": "copied; legacy source preserved",
+  "product_id": "P002",
+  "source_fingerprint": "57ca1e14e6a46afc89dd759e97c3afd2097bb567cfbc5d4ec07606c76237ea2a",
+  "output_etf_symbols": 0,
+  "target_month": "202601",
+  "symbols": 300,
+  "signal_rows": 124980,
+  "dropped_affected_fields": [
+    "aggressive_add_buy",
+    "aggressive_add_sell",
+    "quote_aggressive_net"
+  ],
+  "allowed_use": "F014 NP01-NP05 definitions that do not reconstruct quote-arrival aggression",
+  "source_manifest_sha256": "e4e568f065d36ec605fd88c7ca4b724f66554bf14019f7447a8e998e548db4f0"
+}

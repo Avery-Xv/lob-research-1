@@ -1,0 +1,28 @@
+{
+  "kind": "factor_legacy_import",
+  "import_id": "LI-F001-001",
+  "item_id": "F001",
+  "status": "completed_audited_legacy_import",
+  "created_at": "2026-08-07T07:25:21.300766+00:00",
+  "source": "/home/avery/lob_test/data/processed/prebook_rerun/pb01_a_active_take_midprice_sh_1000_1030_202601_202602.csv",
+  "source_sha256": "cd9251e8ac4903557c422adaf78762825f14a32c66865769b7146ec59e99fa39",
+  "destination": "/home/avery/lob-research-1/data/processed/imported/F001/legacy_sh_safe_202601_202602",
+  "destination_sha256": "1ae7da9344fcd9d177f575c465dc3e9b81b0952b00461fd390e688fcc21b564b",
+  "copy_semantics": "copied; legacy source preserved",
+  "scope": {
+    "exchange": "SH",
+    "months": [
+      "202601",
+      "202602"
+    ],
+    "rows": 77425
+  },
+  "definition": "active_take_midprice_intraday_safe_prebook_v1_20260807",
+  "source_metadata": "/home/avery/lob_test/data/processed/prebook_rerun/pb01_a_active_take_midprice_sh_1000_1030_202601_202602.metadata.json",
+  "source_metadata_sha256": "6696fbf782f22e0f702e94c5a83bfad5e69a501e731b356cb9b48a69bb729af8",
+  "current_code_sha256": "f38e3cfed200125b4b83f5a908a50163542cdd37f8e1958b0735b0bdbc53869f",
+  "limitations": [
+    "SZ counterpart was incomplete and was not imported",
+    "R002 returns were not computed"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "kind": "factor_partial_legacy_import",
+  "item_id": "F010",
+  "status": "partial_completed_audited",
+  "exchange": "SZ",
+  "months": [
+    "202601",
+    "202602"
+  ],
+  "data_product_import": "/home/avery/lob-research-1/runs/data_products/P001/legacy_sz_safe_202601_202602/import_manifest.json",
+  "data_product_import_sha256": "1fac777587e3c605858b3faeaecce96621a4c30590dfd76924faed1d9a99fb0b",
+  "outputs": [
+    {
+      "path": "/home/avery/lob-research-1/data/cache/imported/P001/sz_safe_prebook_202601_202602_first_layer/d07_d09_d10_features.csv",
+      "sha256": "82e76a1f94d596763074afe8714a9e8b08246f3af8bf702d9be674e4ce8d09c3"
+    },
+    {
+      "path": "/home/avery/lob-research-1/data/cache/imported/P001/sz_safe_prebook_202601_202602_first_layer/d09_d10_feature_summary.csv",
+      "sha256": "24b4e5a56d4723f5831c5898b5d64a400c981c35c8bde768ca2c3c4e592e9607"
+    },
+    {
+      "path": "/home/avery/lob-research-1/data/cache/imported/P001/sz_safe_prebook_202601_202602_first_layer/quote_depth_bin_summary.csv",
+      "sha256": "54acf16cfbf2a36d12ded0e1db936a106d3d8fd0fa3cf1c2a77f6856090c9e8a"
+    }
+  ],
+  "missing": [
+    "SH",
+    "raw future-return evaluation"
+  ]
+}

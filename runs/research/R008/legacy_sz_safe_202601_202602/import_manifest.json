@@ -1,0 +1,16 @@
+{
+  "kind": "research_partial_legacy_import",
+  "item_id": "R008",
+  "status": "partial_completed_audited",
+  "factor_import": "/home/avery/lob-research-1/runs/factors/F011/legacy_sz_safe_202601_202602/import_manifest.json",
+  "factor_import_sha256": "541ce7b5f56b8b15f3bd451d14ece39fc04ecdc7bf7420708c9fe1da033cf0b5",
+  "exchange": "SZ",
+  "months": [
+    "202601",
+    "202602"
+  ],
+  "missing": [
+    "SH comparison",
+    "registered raw-return outputs"
+  ]
+}

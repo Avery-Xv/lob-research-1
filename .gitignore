@@ -21,6 +21,7 @@ data/recovery/
 results/daily/
 results/intraday/
 results/experiments/
+results/research/
 !results/README.md
 
 # Editor and OS metadata

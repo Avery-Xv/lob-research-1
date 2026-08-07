@@ -1,0 +1,72 @@
+{
+  "kind": "legacy_migration_summary",
+  "status": "PASS",
+  "created_at": "2026-08-07T07:25:26.883750+00:00",
+  "imports": [
+    {
+      "import_id": "LI-F001-001",
+      "item_id": "F001",
+      "status": "completed_audited_legacy_import"
+    },
+    {
+      "import_id": "LI-F013-001",
+      "item_id": "F013",
+      "status": "completed_audited_legacy_import"
+    },
+    {
+      "import_id": "LI-R001-001",
+      "item_id": "R001",
+      "status": "completed_audited_legacy_import"
+    },
+    {
+      "import_id": "LI-P002-001",
+      "item_id": "P002",
+      "status": "completed_audited_legacy_import"
+    },
+    {
+      "import_id": "LI-P001-001",
+      "item_id": "P001",
+      "status": "completed_audited_legacy_import"
+    },
+    {
+      "import_id": null,
+      "item_id": "F008",
+      "status": "partial_completed_audited"
+    },
+    {
+      "import_id": null,
+      "item_id": "R005",
+      "status": "partial_completed_audited"
+    },
+    {
+      "import_id": null,
+      "item_id": "F010",
+      "status": "partial_completed_audited"
+    },
+    {
+      "import_id": null,
+      "item_id": "R007",
+      "status": "partial_completed_audited"
+    },
+    {
+      "import_id": null,
+      "item_id": "F011",
+      "status": "partial_completed_audited"
+    },
+    {
+      "import_id": null,
+      "item_id": "R008",
+      "status": "partial_completed_audited"
+    }
+  ],
+  "not_imported": [
+    "F001 SZ incomplete",
+    "F002 definition not frozen",
+    "F003 side-key/schema obsolete",
+    "F004 depends on F002 and repaired run incomplete",
+    "F005 repaired run incomplete",
+    "F006 current intraday version never ran",
+    "F007/F009/F012/F014-F017 unimplemented",
+    "M1-Q and quote_aggressive_net repaired runs incomplete"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-08-07",
+  "counts": {
+    "factor_groups": 17,
+    "research_experiments": 25
+  },
+  "policy": "Only audited artifacts are imported. Partial evidence never satisfies a full F/R completion gate.",
+  "factors": {
+    "fully_migrated": [
+      {"id":"F013","scope":"M1-M6, medium300, 202601","next_compute":"none for the unchanged baseline"}
+    ],
+    "partially_migrated": [
+      {"id":"F001","reused":"SH 202601-202602 factor output","remaining":"SZ and R002 horizons/months"},
+      {"id":"F008","reused":"SZ 202601-202602 first-layer mechanism outputs","remaining":"SH, atomic-chain version and registered future-return outputs"},
+      {"id":"F010","reused":"SZ 202601-202602 first-layer mechanism outputs","remaining":"SH and unified aggregation"},
+      {"id":"F011","reused":"SZ 202601-202602 first-layer mechanism outputs","remaining":"SH conditioning layers and registered returns"}
+    ],
+    "submitted_but_recompute_or_complete": [
+      {"ids":["F002"],"reason":"legacy result predates definition freeze; audit safe-prebook definition first"},
+      {"ids":["F003"],"reason":"legacy v1 used an obsolete order key/schema; recompute by (side, order_id)"},
+      {"ids":["F004"],"reason":"depends on F002 and repaired SH run was incomplete"},
+      {"ids":["F005"],"reason":"repaired SH D01-D03 run was incomplete"}
+    ],
+    "not_previously_computed_in_current_definition": [
+      {"ids":["F006"],"reason":"current intraday D04/D05 definition never completed"},
+      {"ids":["F007","F009","F012"],"reason":"definitions remain pending"},
+      {"ids":["F014","F015","F016","F017"],"reason":"specified/planned but not implemented as current factors"}
+    ]
+  },
+  "research": {
+    "fully_migrated": [
+      {"id":"R001","scope":"M1-M6 mechanism/direct-target baseline, medium300, 202601"}
+    ],
+    "partially_migrated": [
+      {"ids":["R005","R007","R008"],"scope":"SZ 202601-202602 first-layer mechanism evidence only","remaining":"SH and each registry-specified comparison/return output"}
+    ],
+    "not_completed_under_current_spec": [
+      {"ids":["R002"],"reason":"F001 SH factor was imported, but registered cross-month return experiment was not run"},
+      {"ids":["R003"],"reason":"current intraday factor/experiment not run"},
+      {"ids":["R004","R006","R009","R010","R011","R012","R013","R014","R015","R016","R017","R018","R019","R020","R021","R022","R023","R024","R025"],"reason":"no complete result satisfying the current research specification"}
+    ]
+  },
+  "reusable_data_products": [
+    {"id":"P001","scope":"SZ 202601-202602 safe-prebook first-layer output","restriction":"not a completed factor or research result"},
+    {"id":"P002","scope":"medium300 202601 sanitized Batch A columns","restriction":"aggressive_add_buy, aggressive_add_sell and quote_aggressive_net were removed"}
+  ],
+  "migration_summary": "runs/legacy_migration_summary.json"
+}

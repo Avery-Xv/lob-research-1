@@ -1,0 +1,18 @@
+{
+  "kind": "research_legacy_import",
+  "import_id": "LI-R001-001",
+  "item_id": "R001",
+  "status": "completed_audited_legacy_import",
+  "created_at": "2026-08-07T07:25:24.380534+00:00",
+  "source": "/home/avery/lob_test/results/intraday/order_shape_mechanism/medium300_202601_v1",
+  "source_sha256": "c02e8ef01daedf09d8368fffbe8033ede5a3e8def0b1334d4b2a7b9c339a41dd",
+  "destination": "/home/avery/lob-research-1/results/research/R001/legacy_medium300_202601_v1",
+  "destination_sha256": "c02e8ef01daedf09d8368fffbe8033ede5a3e8def0b1334d4b2a7b9c339a41dd",
+  "copy_semantics": "copied; legacy source preserved",
+  "factor_import": "/home/avery/lob-research-1/runs/factors/F013/legacy_medium300_202601_v1/import_manifest.json",
+  "factor_import_sha256": "31b22c072c82ba15b69505811426be2a19e31a299bc905d40e469cf886fe1414",
+  "decision": "M2/M3 stopped; M1/M6 retained as controls and candidate sources",
+  "limitations": [
+    "Mechanism/direct-target evidence only; no future-return claim"
+  ]
+}

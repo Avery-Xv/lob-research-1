@@ -53,7 +53,7 @@ def test_combine_sessions_recomputes_daily_ratios(tmp_path: Path) -> None:
     assert combine_sessions([str(morning), str(afternoon)], str(output), 2) == 1
     row = next(csv.DictReader(output.open()))
     assert row["session_count"] == "2"
-    assert float(row["vr_log"]) == math.log(0.5)
-    assert float(row["cr_log"]) == math.log(0.5)
-    assert float(row["single_size_ratio_log"]) == 0.0
+    assert math.isclose(float(row["vr_log"]), math.log(0.5), rel_tol=0.0, abs_tol=1e-15)
+    assert math.isclose(float(row["cr_log"]), math.log(0.5), rel_tol=0.0, abs_tol=1e-15)
+    assert math.isclose(float(row["single_size_ratio_log"]), 0.0, rel_tol=0.0, abs_tol=1e-15)
     assert row["is_valid"] == "True"

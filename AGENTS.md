@@ -64,6 +64,12 @@ Research jobs may consume only `completed_audited` factor completions created by
 
 ## Shanghai/Shenzhen Immediate-Fill Handling
 
+For any task that reads, interprets, projects, or audits V4 LOB fields, use
+`.agents/skills/v4-lob-sh-sz-semantics/SKILL.md` before changing code or
+submitting work. Its field allowlist and exchange-specific event traces are the
+repository's operational interpretation contract; if a dataset disagrees,
+stop at audit rather than guessing from field names.
+
 Treat every V3/V4 LOB row as a post-event book snapshot, but preserve the
 exchange-specific publication order for a marketable order that is immediately
 partially filled:

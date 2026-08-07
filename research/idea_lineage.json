@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "audit_scope": "All 13 Markdown files under /home/avery/lob_test/docs were enumerated on 2026-08-07; current-repo paths below are the migrated canonical copies.",
+  "factor_lineage": [
+    {"id":"F001","legacy_ideas":["active_gap","AG01"],"source_sections":["README.md#Shanghai Pre-Match Publication Semantics","docs/EXPERIMENT_PLAN.md#5. AG01：active_gap 扩样"]},
+    {"id":"F002","legacy_ideas":["passive_large_gap_B","passive_large_gap_S"],"source_sections":["docs/大价差占比因子逻辑文档.md#3. 核心定义","docs/大价差占比因子逻辑文档.md#7. 基于研究发现的因子"]},
+    {"id":"F003","legacy_ideas":["vr_log","cr_log","single_size_ratio_log"],"source_sections":["docs/量比与订单行为因子手册.md#7. 核心日频因子","docs/量比与订单行为因子手册.md#9. 日内因子版本"]},
+    {"id":"F004","legacy_ideas":["joint_large_gap","large_gap_x_vr"],"source_sections":["docs/大价差占比因子逻辑文档.md#7. 基于研究发现的因子","docs/量比与订单行为因子手册.md#14. 风格暴露与重复性"]},
+    {"id":"F005","legacy_ideas":["D01","D02","D03"],"source_sections":["docs/stylized-fact-4-6_日频因子手册.md#3. 文档直接支持的三个基准因子"]},
+    {"id":"F006","legacy_ideas":["D04","D05","ID05"],"source_sections":["docs/stylized-fact-4-6_日频因子手册.md#4. stylized-fact-6 机制升级因子","docs/HANDOFF_D04_D06_NEXT_SESSION.md#已固定口径"]},
+    {"id":"F007","legacy_ideas":["D06","SF46I06"],"source_sections":["docs/stylized-fact-4-6_日频因子手册.md#D06：主动大单—价格反应不足","docs/EXPERIMENT_PLAN.md#7. SF46I06–SF46I11：stylized-fact-4-6 缺失的日内版本"]},
+    {"id":"F008","legacy_ideas":["D07","SF46I07"],"source_sections":["docs/stylized-fact-4-6_日频因子手册.md#D07：永久主动大单成交冲击"]},
+    {"id":"F009","legacy_ideas":["D08","SF46I08"],"source_sections":["docs/stylized-fact-4-6_日频因子手册.md#D08：日度主动大单—被动小单状态"]},
+    {"id":"F010","legacy_ideas":["D09","SF46I09"],"source_sections":["docs/stylized-fact-4-6_日频因子手册.md#D09：极端报价修复压力"]},
+    {"id":"F011","legacy_ideas":["D10","SF46I10"],"source_sections":["docs/stylized-fact-4-6_日频因子手册.md#D10：流动性条件化的冲击动量与反转"]},
+    {"id":"F012","legacy_ideas":["D11","SF46I11"],"source_sections":["docs/stylized-fact-4-6_日频因子手册.md#D11：价格冲击—订单流残差"]},
+    {"id":"F013","legacy_ideas":["M1","M2","M3","M4","M5","M6"],"source_sections":["docs/订单簿形态与非对称自刺激_增量因子手册.md#4. 日内增量因子","docs/订单簿形态与非对称自刺激_增量因子手册.md#5. 日频增量因子","docs/EXPERIMENT_PLAN.md#12. 已完成或停止，不重复立项"]},
+    {"id":"F014","legacy_ideas":["NP01","NP02","NP03","NP04","NP05"],"source_sections":["docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md#5. 第一批候选因子","docs/订单簿形态与非对称自刺激_增量因子手册.md#6. 因子与研究发现映射"]},
+    {"id":"F015","legacy_ideas":["NPE01","NPE02","NPE03","NPE04","NPE05"],"source_sections":["docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md#6. 第二批候选：需要新增一次投影读取"]},
+    {"id":"F016","legacy_ideas":["DR01","DR02","DR03","DR04","DR05"],"source_sections":["docs/近端大单遮挡与深档撤单响应因子设计文档.md#11. 日频因子"]},
+    {"id":"F017","legacy_ideas":["MSI01","MSI02","MSI03","MSI04","MSI05","MSI06","MSI07","MSI08","MSI09","MSI10"],"source_sections":["docs/母单结构与执行阶段_衍生因子研究手册.md#6. 日内候选因子"]}
+  ],
+  "research_lineage": [
+    {"ids":["R001"],"legacy_ideas":["M00","M1-M6"],"source_sections":["docs/EXPERIMENT_PLAN.md#4. M00：已完成的 M 系列基线"]},
+    {"ids":["R002"],"legacy_ideas":["AG01"],"source_sections":["docs/EXPERIMENT_PLAN.md#5. AG01：active_gap 扩样"]},
+    {"ids":["R003"],"legacy_ideas":["ID05"],"source_sections":["docs/EXPERIMENT_PLAN.md#6. ID05：已有代码待运行的日内 D04/D05"]},
+    {"ids":["R004","R005","R006","R007","R008","R009"],"legacy_ideas":["SF46I06-SF46I11"],"source_sections":["docs/EXPERIMENT_PLAN.md#7. SF46I06–SF46I11：stylized-fact-4-6 缺失的日内版本"]},
+    {"ids":["R010","R011","R012","R013"],"legacy_ideas":["ELOB01-ELOB04"],"source_sections":["docs/Event_LOB最小实证实验方案.md#3. 最小实验一：Imbalance 与下一次中价变化","docs/Event_LOB最小实证实验方案.md#4. 最小实验二：多跳价格响应","docs/Event_LOB最小实证实验方案.md#5. 最小实验三：信号兑现时间","docs/Event_LOB最小实证实验方案.md#6. 最小实验四：不同 LOB 事件的价格冲击"]},
+    {"ids":["R014","R015","R016","R017","R018"],"legacy_ideas":["NP01-NP05"],"source_sections":["docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md#5. 第一批候选因子"]},
+    {"ids":["R019"],"legacy_ideas":["NPE01-NPE05"],"source_sections":["docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md#6. 第二批候选：需要新增一次投影读取"]},
+    {"ids":["R020"],"legacy_ideas":["DR01-DR05"],"source_sections":["docs/近端大单遮挡与深档撤单响应因子设计文档.md#13. 实证检验方案"]},
+    {"ids":["R021","R022","R023","R024","R025"],"legacy_ideas":["MSI-A-MSI-E","MSI01-MSI10"],"source_sections":["docs/母单结构与执行阶段_衍生因子研究手册.md#12. 验证与否证实验","docs/母单结构与执行阶段_衍生因子研究手册.md#13. 研究优先级与闸门"]}
+  ],
+  "legacy_idea_dispositions": [
+    {"ideas":["OI01","OI02"],"disposition":"absorbed","targets":["F013","F014"],"reason":"M1 state and NP direct-target versions cover these concepts."},
+    {"ideas":["OI03","OI04","OD04","OD05"],"disposition":"stopped","targets":["F013","R001"],"reason":"M2/M3 original directions were rejected; do not reopen unchanged specifications."},
+    {"ideas":["OI05","OI06","OD01","OD02","OD03"],"disposition":"absorbed","targets":["F013","F014","R014","R015","R016"],"reason":"M6 and NP01-NP03 retain fill-opportunity and conditional-surprise questions."},
+    {"ideas":["OI07","OD07"],"disposition":"absorbed","targets":["F013","F014","R015","R017"],"reason":"M4/M5 baseline plus executability and book-flow divergence tests cover conditional depth."},
+    {"ideas":["OI08","OD06"],"disposition":"absorbed","targets":["F015","R019"],"reason":"Intraday heat surprise and instability require the NPE shared event projection."},
+    {"ideas":["large_gap hard intersection","10/20/30% tail widths","bottom inventory overlay"],"disposition":"stopped","targets":["F004"],"reason":"Legacy tests found no stable increment; preserve results but do not repeat unchanged."}
+  ],
+  "unmapped_legacy_ideas": []
+}
