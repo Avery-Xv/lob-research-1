@@ -79,7 +79,7 @@ conda_lob/bin/python scripts/pipelines/factor_pipeline.py plan F001 \
   --months 202601 202602 202603 202604 \
   --exchange ALL --window 1000_1030 \
   --manifest data/manifests/v4_a_share_stock_paths_202601_202604.txt \
-  --audit-receipt audits/Q003/q003_202601_12x3_v1/preflight_receipt.json
+  --audit-receipt audits/Q003/q003_202601_12x3_v2/preflight_receipt.json
 ```
 
 factor manifest 只有在凭证、清单月份和当前实现全部匹配后才写为 `ready_to_submit`。计算完成后先用 `complete_factor_run.py` 封存输出；研究实验只能绑定完成凭证：

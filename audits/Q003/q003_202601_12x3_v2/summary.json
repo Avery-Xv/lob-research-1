@@ -1,0 +1,91 @@
+{
+  "classification_counts": {
+    "SH": {
+      "passive_only": 445833,
+      "trade_only_active": 266040,
+      "pretrade_active_add": 0,
+      "posttrade_remainder": 6872,
+      "same_row_unresolved": 0
+    },
+    "SZ": {
+      "passive_only": 601549,
+      "trade_only_active": 2841,
+      "pretrade_active_add": 332344,
+      "posttrade_remainder": 0,
+      "same_row_unresolved": 0
+    }
+  },
+  "active_add_counts": {
+    "SH": 6872,
+    "SZ": 332344
+  },
+  "sz_pretrade_conservation_violations": 0,
+  "directionless_active_id_collisions": 0,
+  "book_qc": {
+    "row_order_violations": 0,
+    "missing_books": 30306,
+    "locked_books": 530621,
+    "crossed_books": 210387
+  },
+  "checks": {
+    "both_exchanges_present": true,
+    "row_order_strict": true,
+    "sh_trade_before_add_observed": true,
+    "sh_fully_immediate_trade_only_observed": true,
+    "sz_add_before_trade_observed": true,
+    "sz_submit_quantity_conserved": true,
+    "side_qualified_keys_complete": true
+  },
+  "status": "PASS",
+  "audit_version": "q003_order_remainder_v1",
+  "created_at": "2026-08-07T06:43:42.415680+00:00",
+  "git_commit": "f781e925c09dc6bce2be3effce65a8ed46eb2d81",
+  "file_list": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202510_202602.txt",
+  "file_list_sha256": "9307b526e04e411a39a9a685d4921562a717a6fb7f37855f6c6e13ad68584d04",
+  "universe_metadata": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202510_202602.metadata.json",
+  "universe_metadata_sha256": "24f57fbc39827870b29df9f1fd7b64827eaef5aeb4ea9bb50d44eeccc50b4b56",
+  "universe_rule": "point-in-time Shanghai/Shenzhen A shares only: SecuCategory=1, SecuMarket in (83,90), listed by month end, and not terminated before month start",
+  "output_etf_symbols": 0,
+  "month": "202601",
+  "symbols": [
+    "SH600000",
+    "SH600004",
+    "SH600006",
+    "SH600007",
+    "SH600008",
+    "SH600009",
+    "SZ000001",
+    "SZ000002",
+    "SZ000004",
+    "SZ000006",
+    "SZ000007",
+    "SZ000008"
+  ],
+  "dates": [
+    20260105,
+    20260106,
+    20260107
+  ],
+  "implementation_sha256": {
+    "scripts/factors/experiment_batch_1/engine.py": "0475eeecf4665bbc903e7d4737f3a112410772ee45488460b64b12d99fa3d7b0",
+    "scripts/factors/order_behavior_ratio/intraday_window_factor.py": "423ef42c454c6d48c4ceb350271c507ffcff83063ff7cdc2da0f067ce5616c56",
+    "scripts/factors/passive_large_gap_ratio/intraday_window_factor.py": "35f67143f21029ce2e524484590f601041282937b653b1798dd4e04280cfd955",
+    "scripts/factors/joint_large_gap_order_behavior/compute_v4.py": "876fee16260fefbb5fe5e98485ccb134cef6572bf1940acc3985d17e43885457",
+    "scripts/factors/order_shape_mechanism/m1_quote_engine.py": "b12bb2d7568e2b433eb482c8ce401bff01ada0804f961a0fa1bbed109bd54628",
+    "scripts/factors/order_shape_mechanism/batch_a_engine.py": "d23a5c5ce2ba2a91bf7c73c9d1b88c6ee65732046975d5b7a9def4dfc99fc8ab",
+    "scripts/factors/stylized_fact_4_6/reproduce_d01_d03.py": "7f9ebcd17df0544f069d974a47234317714729fe48bf21e04c75c8dbdfbcf220"
+  },
+  "semantics": {
+    "key": "(side, active_order_id)",
+    "SH": "TRADE(s) before ORDER_ADD remainder; original quantity = immediate trades + remainder; trade-only means fully immediate.",
+    "SZ": "ORDER_ADD full submitted quantity before child TRADE(s); no second remainder add.",
+    "passive_rule": "Any ORDER_ADD belonging to an active-order key is excluded from passive submission and quote-arrival metrics.",
+    "post_processed_links_used": false
+  },
+  "passed_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q003",
+    "Q005"
+  ]
+}

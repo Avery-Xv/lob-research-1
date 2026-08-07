@@ -1,0 +1,50 @@
+{
+  "kind": "real_sample_parallel_determinism",
+  "status": "PASS",
+  "created_at": "2026-08-07T06:44:42.782095+00:00",
+  "month": "202601",
+  "symbols": [
+    "SH600000",
+    "SZ000001"
+  ],
+  "implementations": {
+    "scripts/factors/order_behavior_ratio/intraday_window_factor.py": "423ef42c454c6d48c4ceb350271c507ffcff83063ff7cdc2da0f067ce5616c56",
+    "scripts/factors/passive_large_gap_ratio/intraday_window_factor.py": "35f67143f21029ce2e524484590f601041282937b653b1798dd4e04280cfd955",
+    "scripts/factors/joint_large_gap_order_behavior/compute_v4.py": "876fee16260fefbb5fe5e98485ccb134cef6572bf1940acc3985d17e43885457"
+  },
+  "evidence": {
+    "order_behavior": {
+      "status": "PASS",
+      "serial_hashes": {
+        "SH600000": "1bbb69dba7891a67cb2bcd6b6a5a3ec2ebb6c88a3b272d35aa62b02495c9300b",
+        "SZ000001": "9b806222ca1700ebdb3f72aad1d9d0db134dd64d37a8f26aad31c07a85caf468"
+      },
+      "parallel_hashes": {
+        "SH600000": "1bbb69dba7891a67cb2bcd6b6a5a3ec2ebb6c88a3b272d35aa62b02495c9300b",
+        "SZ000001": "9b806222ca1700ebdb3f72aad1d9d0db134dd64d37a8f26aad31c07a85caf468"
+      }
+    },
+    "passive_large_gap": {
+      "status": "PASS",
+      "serial_hashes": {
+        "SH600000": "24dd9376d2e7c1ab227ba49ce6347278b4f440d0bf9d7e6ca546eb11bef7e08b",
+        "SZ000001": "0b1ebb5a0542865a96903519d9fa221b34f666e1747523c862659cc55b46d732"
+      },
+      "parallel_hashes": {
+        "SH600000": "24dd9376d2e7c1ab227ba49ce6347278b4f440d0bf9d7e6ca546eb11bef7e08b",
+        "SZ000001": "0b1ebb5a0542865a96903519d9fa221b34f666e1747523c862659cc55b46d732"
+      }
+    },
+    "joint_large_gap": {
+      "status": "PASS",
+      "serial_hashes": {
+        "SH600000": "3ba00daa6f2d4ec64051e465fbbee5d9c91881b5a0b126004b47c3211b5611c2",
+        "SZ000001": "37d6c0c747f03a10e18d53ab14c2620374cb9810b5b219d32e54c25788e51cfb"
+      },
+      "parallel_hashes": {
+        "SH600000": "3ba00daa6f2d4ec64051e465fbbee5d9c91881b5a0b126004b47c3211b5611c2",
+        "SZ000001": "37d6c0c747f03a10e18d53ab14c2620374cb9810b5b219d32e54c25788e51cfb"
+      }
+    }
+  }
+}

@@ -2,9 +2,15 @@
 
 更新日期：2026-08-07
 
-状态：PARTIAL。2026-08-07 已完成 experiment_batch_1 深市 V2
-safe-prebook 子任务及第一批 D07/D09/D10 特征分析；上海主动成交余量修复、
-active_gap、D01–D03、独立 D07 及 large_gap 审计仍为 GATED。
+状态：PRECOMPUTE_AUDIT_DONE。沪深主动单发布顺序、剩余委托、方向联合键、真实样本串并行确定性以及任务门禁已经完成；正式全市场因子与研究实验重算尚未提交。
+
+正式审计证据：
+
+- `audits/Q003/q003_202601_12x3_v2/summary.json`：6 沪+6 深、3 个交易日，PASS。
+- `audits/Q003/q003_202601_12x3_v2/raw_traces_20x2.csv`：沪深各 20 个原始订单链。
+- `audits/Q006/q006_202601_shsz_v1/summary.json`：order_behavior、passive_large_gap、joint_large_gap 真实样本串行/两进程结果一致。
+- `audits/Q003/q003_202601_12x3_v2/preflight_receipt.json`：Q001-Q008 PASS，并认证两套 ETF=0 股票清单。
+- v1 失败证据保留在 `audits/Q003/q003_202601_12x3_v1/`；失败仅因“样本必须出现同号异向数字 ID”这一不合理条件，v2 将键安全交由强制回归测试验证。
 
 深市已完成：
 

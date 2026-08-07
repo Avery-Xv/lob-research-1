@@ -34,7 +34,7 @@ conda_lob/bin/python scripts/pipelines/factor_pipeline.py plan F001 \
   --run-id 202601_202602_sh_safe_v1 \
   --months 202601 202602 --exchange SH --window 1000_1030 \
   --manifest data/manifests/v4_a_share_stock_paths_202510_202602.txt \
-  --audit-receipt audits/Q003/q003_202601_12x3_v1/preflight_receipt.json
+  --audit-receipt audits/Q003/q003_202601_12x3_v2/preflight_receipt.json
 ```
 
 成功建立的 manifest 状态为 `ready_to_submit`，可作为计算任务的唯一提交规格。未通过凭证、清单月份不覆盖、实现已改变或因子尚无实现时，命令会直接失败。

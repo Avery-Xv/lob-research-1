@@ -2,6 +2,7 @@
 
 研究资产现已按因子 `F001...` 与研究实验 `R001...` 两条管线管理。新任务先查看
 [`docs/RESEARCH_PIPELINES.md`](docs/RESEARCH_PIPELINES.md) 和 `research/` 注册表；
+计算提交前还必须通过 [`docs/COMPUTE_PREFLIGHT.md`](docs/COMPUTE_PREFLIGHT.md) 的不可变审计凭证；
 旧 D/M/PB/AG/NP 编号仅作为迁移别名。
 
 This workspace implements a daily factor from full-depth event LOB parquet files:
