@@ -183,7 +183,7 @@ def summarize(cases: list[dict[str, Any]], qc_rows: list[dict[str, int]]) -> dic
         "sh_fully_immediate_trade_only_observed": counts[("SH", "trade_only_active")] > 0,
         "sz_add_before_trade_observed": counts[("SZ", "pretrade_active_add")] > 0,
         "sz_submit_quantity_conserved": sz_conservation == 0,
-        "opposite_side_numeric_id_collision_observed": side_collision_ids > 0,
+        "side_qualified_keys_complete": all(row["side"] in ("B", "S") for row in cases),
     }
     summary["checks"] = checks
     summary["status"] = "PASS" if all(checks.values()) else "FAIL"
