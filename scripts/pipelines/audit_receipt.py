@@ -10,6 +10,13 @@ from typing import Any
 
 from registry import REPO_ROOT
 
+INFRASTRUCTURE = (
+    "scripts/pipelines/audit_receipt.py",
+    "scripts/pipelines/factor_pipeline.py",
+    "scripts/pipelines/experiment_pipeline.py",
+    "scripts/pipelines/complete_factor_run.py",
+)
+
 
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -42,7 +49,7 @@ def validate_receipt(
         raise ValueError(f"Input manifest is not certified by receipt: {input_manifest}")
     recorded = receipt.get("implementation_sha256", {})
     stale = [
-        path for path in implementations
+        path for path in [*implementations, *INFRASTRUCTURE]
         if not (REPO_ROOT / path).exists() or recorded.get(path) != sha256(REPO_ROOT / path)
     ]
     if stale:

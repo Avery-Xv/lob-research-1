@@ -35,6 +35,8 @@ def implementation_hashes() -> dict[str, str]:
         "scripts/pipelines/factor_pipeline.py",
         "scripts/pipelines/experiment_pipeline.py",
         "scripts/pipelines/audit_receipt.py",
+        "scripts/pipelines/complete_factor_run.py",
+        "scripts/pipelines/preflight.py",
     })
     return {path: sha256(REPO_ROOT / path) for path in sorted(paths)}
 
