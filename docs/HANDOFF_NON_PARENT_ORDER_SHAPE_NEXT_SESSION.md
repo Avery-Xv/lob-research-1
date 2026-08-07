@@ -1,5 +1,7 @@
 # 非母单订单簿因子研究：下一 Session 交接
 
+> 当前初筛执行口径已更新：固定 10:00–10:30、10:30 信号，只报告 raw 未中性化直接目标，不迁移风格暴露缓存。先读 [`HANDOFF_INTRADAY_STRUCTURE_PILOT.md`](HANDOFF_INTRADAY_STRUCTURE_PILOT.md)；下文中性化结果仅作为历史证据，不再是本轮继续门槛。
+
 ## 1. 任务范围
 
 本交接用于后续 session 继续实现“剥离母单结构之后”的订单簿候选因子。明确排除：

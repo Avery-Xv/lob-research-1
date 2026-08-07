@@ -350,12 +350,12 @@
         "活动度",
         "通过后收益"
       ],
-      "decision_rule": "先复现约 0.009 的域中性订单流增量；失败则不调参。",
+      "decision_rule": "初筛只报告 raw 未中性化结果；成交机会差相对普通主动流没有稳定的未来订单流增量则停止，不调参。",
       "theory_sources": [
         "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"
       ],
       "result_root": "results/research/R014",
-      "spec_version": "v1"
+      "spec_version": "v2_raw_pilot"
     },
     {
       "id": "R015",

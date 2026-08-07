@@ -1,5 +1,9 @@
 # Active-Take Midprice Factor
 
+当前母单/非母单日内初筛先阅读
+[`docs/HANDOFF_INTRADAY_STRUCTURE_PILOT.md`](docs/HANDOFF_INTRADAY_STRUCTURE_PILOT.md)：
+固定 `[10:00, 10:30)`、10:30 信号和 raw 未中性化主结果。
+
 研究资产现已按因子 `F001...` 与研究实验 `R001...` 两条管线管理。新任务先查看
 [`docs/RESEARCH_PIPELINES.md`](docs/RESEARCH_PIPELINES.md) 和 `research/` 注册表；
 计算提交前还必须通过 [`docs/COMPUTE_PREFLIGHT.md`](docs/COMPUTE_PREFLIGHT.md) 的不可变审计凭证；
@@ -113,7 +117,8 @@ The limitation below applies to the legacy `event_full_depth` dataset:
 - factors computed from it are order-book inferred factors rather than
   ground-truth trade classifications.
 
-The current research uses `event_full_depth_v3`. In addition to the full-depth
+The historical implementation below uses `event_full_depth_v3`; current event-level
+research uses `event_depth10_v4` under the repository V4 semantics skill. In addition to the full-depth
 book snapshot, v3 contains source event fields such as:
 
 ```text
