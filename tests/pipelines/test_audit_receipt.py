@@ -10,7 +10,7 @@ import pytest
 PIPELINE_DIR = Path(__file__).resolve().parents[2] / "scripts" / "pipelines"
 sys.path.insert(0, str(PIPELINE_DIR))
 
-from audit_receipt import sha256, validate_receipt  # noqa: E402
+from audit_receipt import INFRASTRUCTURE, sha256, validate_receipt  # noqa: E402
 
 
 def test_receipt_rejects_uncertified_manifest_and_stale_implementation(tmp_path: Path) -> None:
@@ -24,7 +24,10 @@ def test_receipt_rejects_uncertified_manifest_and_stale_implementation(tmp_path:
         "kind": "lob_preflight_receipt", "status": "PASS",
         "passed_quality_gates": ["Q001", "Q003"],
         "certified_manifests": [{"sha256": sha256(manifest)}],
-        "implementation_sha256": {repo_implementation: sha256(repo_path)},
+        "implementation_sha256": {
+            repo_implementation: sha256(repo_path),
+            **{path: sha256(Path(__file__).resolve().parents[2] / path) for path in INFRASTRUCTURE},
+        },
     }
     receipt_path.write_text(json.dumps(receipt))
     validate_receipt(receipt_path, ["Q003"], [repo_implementation], manifest)
