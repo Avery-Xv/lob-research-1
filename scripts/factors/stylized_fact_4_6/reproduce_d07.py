@@ -25,10 +25,11 @@ import duckdb
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-FACTOR_VERSION = "stylized_fact_4_6_d07_event_time_v1"
+FACTOR_VERSION = "stylized_fact_4_6_d07_sh_safe_prebook_v1_20260807"
 WINDOWS = (
     ("daily_0930_close", 93_000_000, 145_700_000),
     ("daily_1000_close", 100_000_000, 145_700_000),
+    ("intraday_1000_1030", 100_000_000, 103_000_000),
 )
 EVENT_HORIZONS = (1, 5, 10, 20, 50)
 TIME_HORIZONS_MS = (5_000, 30_000, 60_000, 300_000)
@@ -158,7 +159,7 @@ WITH raw0 AS MATERIALIZED (
                 WHEN e.source_side='S' THEN e.source_sell_order_id END AS event_order_id,
            CASE WHEN array_length(e.bid_px)>0 AND array_length(e.ask_px)>0
                   AND e.bid_px[1] IS NOT NULL AND e.ask_px[1] IS NOT NULL
-                  AND e.bid_px[1]>0 AND e.ask_px[1]>=e.bid_px[1]
+                  AND e.bid_px[1]>0 AND e.ask_px[1]>e.bid_px[1]
                 THEN (e.bid_px[1]::DOUBLE+e.ask_px[1]::DOUBLE)/20000.0 END AS mid
     FROM read_parquet(?,filename=true) e
     WHERE e.date BETWEEN ? AND ?
@@ -166,7 +167,10 @@ WITH raw0 AS MATERIALIZED (
         OR (e.time>=130000000 AND e.time<145700000))
 ),
 raw AS MATERIALIZED (
-    SELECT *,lag(mid) OVER (PARTITION BY symbol,date,session ORDER BY row_id) AS prev_mid,
+    SELECT *,last_value(mid IGNORE NULLS) OVER (
+               PARTITION BY symbol,date,session ORDER BY row_id
+               ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+           ) AS prev_mid,
            lag(source_action) OVER (PARTITION BY symbol,date,session ORDER BY row_id) AS prev_action,
            lag(source_side) OVER (PARTITION BY symbol,date,session ORDER BY row_id) AS prev_side,
            lag(event_order_id) OVER (PARTITION BY symbol,date,session ORDER BY row_id) AS prev_order_id
@@ -209,6 +213,18 @@ orders AS MATERIALIZED (
     LEFT JOIN pre_add_exec p
       ON p.symbol=coalesce(a.symbol,t.symbol) AND p.date=coalesce(a.date,t.date)
      AND p.side=coalesce(a.side,t.side) AND p.order_id=coalesce(a.order_id,t.order_id)
+),
+order_dates AS MATERIALIZED (
+    SELECT symbol,date,row_number() OVER (PARTITION BY symbol ORDER BY date) AS day_seq
+    FROM (SELECT DISTINCT symbol,date FROM orders)
+),
+rolling_thresholds AS MATERIALIZED (
+    SELECT c.symbol,c.date,avg(o.original_qty) AS mean_qty
+    FROM order_dates c
+    JOIN order_dates h ON h.symbol=c.symbol
+      AND h.day_seq BETWEEN c.day_seq-20 AND c.day_seq-1
+    JOIN orders o ON o.symbol=h.symbol AND o.date=h.date
+    GROUP BY c.symbol,c.date
 ),
 marked AS MATERIALIZED (
     SELECT *,CASE WHEN source_action='TRADE' AND source_side IN ('B','S')
@@ -261,7 +277,7 @@ order_window AS MATERIALIZED (
 ),
 eligible AS MATERIALIZED (
     SELECT e.*,w.window_name,w.window_start,w.window_end,v.threshold_version,
-           t.mean_qty,ow.window_exec_notional,
+           coalesce(t.mean_qty,rt.mean_qty) AS mean_qty,ow.window_exec_notional,
            row_number() OVER () AS episode_id
     FROM episode_enriched e
     JOIN order_window ow ON ow.symbol=e.symbol AND ow.date=e.date
@@ -269,8 +285,10 @@ eligible AS MATERIALIZED (
     CROSS JOIN (VALUES {window_values}) w(window_name,window_start,window_end)
     CROSS JOIN (VALUES ('mean_x05'),('fixed_notional')) v(threshold_version)
     LEFT JOIN thresholds t ON t.symbol=e.symbol AND t.date=e.date
+    LEFT JOIN rolling_thresholds rt ON rt.symbol=e.symbol AND rt.date=e.date
     WHERE ow.window_name=w.window_name AND e.start_time>=w.window_start AND e.end_time<w.window_end
-      AND CASE WHEN v.threshold_version='mean_x05' THEN e.original_qty>=t.mean_qty*0.5
+      AND CASE WHEN v.threshold_version='mean_x05'
+                 THEN e.original_qty>=coalesce(t.mean_qty,rt.mean_qty)*0.5
                ELSE ow.window_exec_notional>=? END
 ),
 event_targets AS MATERIALIZED (
@@ -342,7 +360,7 @@ quality AS MATERIALIZED (
 dates AS MATERIALIZED (SELECT DISTINCT symbol,date FROM raw),
 grid AS MATERIALIZED (
     SELECT d.symbol,d.date,w.window_name,v.threshold_version,c.clock_type,c.horizon,c.horizon_unit,
-           t.mean_qty
+           coalesce(t.mean_qty,rt.mean_qty) AS mean_qty
     FROM dates d CROSS JOIN (VALUES {window_values}) w(window_name,window_start,window_end)
     CROSS JOIN (VALUES ('mean_x05'),('fixed_notional')) v(threshold_version)
     CROSS JOIN (SELECT 'event' AS clock_type,h::BIGINT AS horizon,'events' AS horizon_unit
@@ -350,8 +368,10 @@ grid AS MATERIALIZED (
                 UNION ALL
                 SELECT 'time',h::BIGINT,'milliseconds' FROM (VALUES {time_values}) x(h)) c
     LEFT JOIN thresholds t ON t.symbol=d.symbol AND t.date=d.date
+    LEFT JOIN rolling_thresholds rt ON rt.symbol=d.symbol AND rt.date=d.date
 )
-SELECT g.symbol,g.date,'daily' AS frequency,g.window_name,g.threshold_version,
+SELECT g.symbol,g.date,
+       CASE WHEN starts_with(g.window_name,'intraday_') THEN 'intraday' ELSE 'daily' END AS frequency,g.window_name,g.threshold_version,
        g.clock_type,g.horizon,g.horizon_unit,
        coalesce(a.episode_count,0),coalesce(a.buy_episode_count,0),coalesce(a.sell_episode_count,0),
        coalesce(a.nonzero_immediate_count,0),coalesce(a.valid_retained_count,0),
@@ -521,6 +541,7 @@ def parse_args() -> argparse.Namespace:
             "g2_d04_d06_primitives_202508_202601_no_industry_size_v2.csv"
         ),
     )
+    parser.add_argument("--exchange", choices=("ALL", "SH", "SZ"), default="ALL")
     parser.add_argument("--date-from", type=int, default=20260105)
     parser.add_argument("--date-to", type=int, default=20260130)
     parser.add_argument("--fixed-notional", type=float, default=1_000_000.0)
@@ -560,6 +581,8 @@ def main() -> int:
     args = parse_args()
     grouped = expand_inputs(args.inputs, args.file_list, args.date_from, args.date_to)
     symbols = sorted(grouped)
+    if args.exchange != "ALL":
+        symbols = [symbol for symbol in symbols if symbol.startswith(args.exchange)]
     if args.sample_symbols and args.sample_symbols < len(symbols):
         symbols = sorted(random.Random(args.seed).sample(symbols, args.sample_symbols))
     if args.limit_symbols:

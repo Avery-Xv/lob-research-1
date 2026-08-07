@@ -113,6 +113,27 @@ class M1QuoteEngineTest(unittest.TestCase):
         )
         self.assertEqual(observations, 1)
 
+    def test_shanghai_active_remainder_is_not_counted_as_quote_add(self) -> None:
+        engine = M1QuoteEngine(
+            "SH600000", M1QuoteConfig(lob_horizons=(1,), trade_horizons=(1,))
+        )
+        for row in (
+            event(0),
+            event(1, "TRADE", "B", 102, 10, buy_order_id=7, sell_order_id=70),
+            event(2, "ORDER_ADD", "B", 101, 30, buy_order_id=7),
+            event(3),
+        ):
+            engine.process(row)
+        stats, quality = engine.finish()
+        self.assertEqual(quality[0]["active_remainders_excluded"], 1)
+        self.assertEqual(quality[0]["passive_adds"], 0)
+        observations, _value = stat_value(
+            stats,
+            "lob1_chain_future_signed_by_quote_state",
+            "trigger=B|chase=0|replenish=0|chain=all",
+        )
+        self.assertEqual(observations, 1)
+
     def test_future_labels_do_not_cross_lunch(self) -> None:
         engine = M1QuoteEngine(
             "SH600000", M1QuoteConfig(lob_horizons=(2,), trade_horizons=(2,))

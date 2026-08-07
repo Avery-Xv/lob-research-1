@@ -13,7 +13,7 @@ from scripts.factors.order_shape_mechanism.engine import (
 )
 
 
-FACTOR_VERSION = "m1_quote_mechanism_v1_20260804"
+FACTOR_VERSION = "m1_quote_mechanism_sh_remainder_v2_20260807"
 SIDES = ("B", "S")
 
 
@@ -45,6 +45,7 @@ class M1QuoteQuality:
     terminal_chains: int = 0
     passive_adds: int = 0
     marketable_adds_excluded: int = 0
+    active_remainders_excluded: int = 0
     quote_adds_missing_prebook: int = 0
     cancels_missing_prebook: int = 0
     incomplete_raw_labels: int = 0
@@ -106,6 +107,7 @@ class M1QuoteEngine:
         }
         self.chain: ActiveChain | None = None
         self.seen_trade_recids: set[int] = set()
+        self.active_order_keys: set[tuple[str, int]] = set()
         self.day_stats: dict[tuple[str, str], RunningMoments] = defaultdict(RunningMoments)
         self.day_quality = M1QuoteQuality()
         self.stat_rows: list[dict[str, object]] = []
@@ -130,6 +132,8 @@ class M1QuoteEngine:
         self.day_quality.total_events += 1
         valid_trade = self._valid_trade(event)
         active_order_id = self._active_order_id(event) if valid_trade else None
+        if valid_trade and active_order_id is not None:
+            self.active_order_keys.add((str(event.side), int(active_order_id)))
         continues_chain = (
             valid_trade
             and self.chain is not None
@@ -377,6 +381,10 @@ class M1QuoteEngine:
         price = float(event.price)
         volume = float(event.volume or 0)
         if event.action == "ORDER_ADD":
+            order_id = event.buy_order_id if side == "B" else event.sell_order_id
+            if order_id is not None and (side, int(order_id)) in self.active_order_keys:
+                self.day_quality.active_remainders_excluded += 1
+                return
             marketable = price >= ask if side == "B" else price <= bid
             if marketable:
                 self.day_quality.marketable_adds_excluded += 1
@@ -437,6 +445,7 @@ class M1QuoteEngine:
         self.current_session = None
         self.previous_row_id = None
         self.seen_trade_recids = set()
+        self.active_order_keys = set()
         self.day_stats = defaultdict(RunningMoments)
         self.day_quality = M1QuoteQuality()
 

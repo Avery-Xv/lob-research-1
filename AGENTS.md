@@ -52,6 +52,36 @@ zero ETF symbols before a full-market run.
 
 For factor changes, validate event counts and values on one file, then compare serial and parallel outputs on a small identical sample. For backtests, verify factor time, entry time, and exit time explicitly. Never filter using future return-window information. Review `data/README.md` and the Shanghai `FULL`/`PARTIAL` linkage notes in `README.md` before using order-record links.
 
+## Shanghai/Shenzhen Immediate-Fill Handling
+
+Treat every V3/V4 LOB row as a post-event book snapshot, but preserve the
+exchange-specific publication order for a marketable order that is immediately
+partially filled:
+
+- Shanghai commonly publishes TRADE row(s) before an ORDER_ADD for the
+  unexecuted remainder. A fully immediately filled order may have no ORDER_ADD.
+  Reconstruct original submitted quantity as the immediate trade quantity plus
+  any later remainder for the same side and active order ID. Do not use
+  forward-linked FULL/PARTIAL record fields as point-in-time features.
+- Shenzhen commonly publishes the full submitted quantity as ORDER_ADD,
+  followed by child TRADE row(s). The unmatched quantity remains in the book
+  without a second remainder ORDER_ADD. Intermediate post-event snapshots may
+  be locked or crossed while the marketable order is expanded.
+- Never reorder either exchange's events. For Shenzhen book-path, impact, depth,
+  and quote-lifecycle features, retain the latest valid uncrossed pre-book
+  across a temporary invalid chain and compare it with the first subsequent
+  valid book. Count missing, locked, and crossed rows separately in QC; do not
+  let them overwrite the valid pre-book.
+- Count one logical active order by (side, active_order_id), not by TRADE rows.
+  Under the default order-arrival classification, an immediately filled order
+  and its remainder are one active order, and the remainder is not counted
+  again as a passive submission. Any quantity-slice alternative must be
+  explicitly labeled as a sensitivity specification.
+
+Changes to reusable event-state logic must include Shanghai trade-before-add
+and Shenzhen add-before-trade tests, including a temporarily crossed chain,
+session reset, and serial/parallel equality on the same sample.
+
 ## Research Evaluation Defaults
 
 By default, evaluate and report factor results without neutralization. Treat raw,

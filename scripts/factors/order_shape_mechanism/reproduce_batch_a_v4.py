@@ -165,6 +165,7 @@ def build_manifest(
     months: Sequence[str],
     config: BatchAConfig,
     batch_size: int,
+    exchange: str | None,
 ) -> dict[str, object]:
     body = {
         "factor_version": FACTOR_VERSION,
@@ -176,6 +177,7 @@ def build_manifest(
         "months": list(months), "target_month": config.target_month,
         "symbols": len(inputs), "stock_month_files": len(inputs) * len(months),
         "batch_size": batch_size, "config": asdict(config),
+        "exchange": exchange,
         "signal_rule": "fixed grid; features use (t-60s,t); labels use [t,t+10m); no lunch crossing",
         "fill_model_rule": "expanding prior-day-only empirical 60s passive fill probabilities",
         "label_policy": "direct targets only; no return label; each label handled independently",
@@ -209,6 +211,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--universe-metadata", type=Path, required=True)
     parser.add_argument("--warmup-months", nargs="+", required=True)
     parser.add_argument("--target-month", required=True)
+    parser.add_argument("--exchange", choices=("SH", "SZ"))
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--fetch-rows", type=int, default=10_000)
@@ -229,6 +232,11 @@ def main() -> int:
         raise ValueError("all warmup months must precede target month")
     inputs, metadata = load_inputs(args.file_list, args.universe_metadata, warmup, target)
     inputs = {symbol: paths for symbol, paths in inputs.items() if all(month in paths for month in months)}
+    if args.exchange:
+        inputs = {
+            symbol: paths for symbol, paths in inputs.items()
+            if symbol.startswith(args.exchange)
+        }
     if args.audit_symbols:
         missing = set(args.audit_symbols) - set(inputs)
         if missing:
@@ -239,7 +247,10 @@ def main() -> int:
     if not inputs:
         raise ValueError("no complete symbol histories")
     config = BatchAConfig(target_month=target)
-    manifest = build_manifest(args.file_list, args.universe_metadata, metadata, inputs, months, config, args.batch_size)
+    manifest = build_manifest(
+        args.file_list, args.universe_metadata, metadata, inputs, months, config,
+        args.batch_size, args.exchange,
+    )
     if args.dry_run:
         print(json.dumps(manifest, ensure_ascii=False, indent=2))
         return 0

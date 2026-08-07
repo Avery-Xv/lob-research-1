@@ -26,7 +26,7 @@ CONTINUOUS_SESSIONS = (
 )
 INTRADAY_START = 100000000
 INTRADAY_END = 103000000
-FACTOR_VERSION = "joint_large_gap_order_behavior_v4_20260802"
+FACTOR_VERSION = "joint_large_gap_order_behavior_v4_sh_safe_prebook_20260807"
 UNIVERSE_RULE = (
     "point-in-time Shanghai/Shenzhen A shares only; SecuCategory=1; "
     "SecuMarket in (83,90); ETF excluded before factor calculation"
@@ -301,15 +301,19 @@ def compute_one(
             """
             CREATE TEMP TABLE continuous AS
             SELECT *,
-                   lag(bid1) OVER (
+                   last_value(
+                       CASE WHEN bid1 > 0 AND ask1 > bid1 THEN bid1 END IGNORE NULLS
+                   ) OVER (
                        PARTITION BY date,
                            CASE WHEN time < 120000000 THEN 'AM' ELSE 'PM' END
-                       ORDER BY row_id
+                       ORDER BY row_id ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
                    ) AS pre_bid1,
-                   lag(ask1) OVER (
+                   last_value(
+                       CASE WHEN bid1 > 0 AND ask1 > bid1 THEN ask1 END IGNORE NULLS
+                   ) OVER (
                        PARTITION BY date,
                            CASE WHEN time < 120000000 THEN 'AM' ELSE 'PM' END
-                       ORDER BY row_id
+                       ORDER BY row_id ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
                    ) AS pre_ask1
             FROM raw_events
             """
@@ -825,6 +829,7 @@ def main() -> int:
     parser.add_argument("--universe-metadata", type=Path, required=True)
     parser.add_argument("--calendar", type=Path, required=True)
     parser.add_argument("--target-months", nargs="+", required=True)
+    parser.add_argument("--exchange", choices=("ALL", "SH", "SZ"), default="ALL")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--metadata-output", type=Path)
     parser.add_argument("--workers", type=int, default=2)
@@ -846,6 +851,11 @@ def main() -> int:
     manifest_months = set(universe_metadata["months"])
     if not target_months <= manifest_months:
         raise ValueError("target months are not all present in the manifest")
+    if args.exchange != "ALL":
+        by_symbol = {
+            symbol: paths for symbol, paths in by_symbol.items()
+            if symbol.startswith(args.exchange)
+        }
     if args.symbols:
         selected = set(args.symbols)
         by_symbol = {
@@ -898,6 +908,7 @@ def main() -> int:
         "factor_version": FACTOR_VERSION,
         "source_version": "event_depth10_v4",
         "target_months": sorted(target_months),
+        "exchange": args.exchange,
         "input_months": universe_metadata["months"],
         "input_manifest": str(args.file_list.resolve()),
         "universe_metadata": str(args.universe_metadata.resolve()),

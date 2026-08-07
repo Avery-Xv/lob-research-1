@@ -147,6 +147,7 @@ def build_manifest(
     target_month: str,
     config: M1QuoteConfig,
     batch_size: int,
+    exchange: str | None,
 ) -> dict[str, object]:
     body = {
         "factor_version": FACTOR_VERSION,
@@ -161,6 +162,7 @@ def build_manifest(
         "symbols": len(inputs),
         "target_files": len(inputs),
         "batch_size": batch_size,
+        "exchange": exchange,
         "target_projection": [
             "date",
             "time",
@@ -213,6 +215,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--file-list", type=Path, required=True)
     parser.add_argument("--universe-metadata", type=Path, required=True)
     parser.add_argument("--target-month", required=True)
+    parser.add_argument("--exchange", choices=("SH", "SZ"))
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--fetch-rows", type=int, default=10_000)
@@ -232,6 +235,11 @@ def main() -> int:
     inputs, metadata = load_inputs(
         args.file_list, args.universe_metadata, [], target_month
     )
+    if args.exchange:
+        inputs = {
+            symbol: paths for symbol, paths in inputs.items()
+            if symbol.startswith(args.exchange)
+        }
     if args.audit_symbols:
         requested = set(args.audit_symbols)
         missing = requested - set(inputs)
@@ -251,6 +259,7 @@ def main() -> int:
         target_month,
         config,
         args.batch_size,
+        args.exchange,
     )
     if args.dry_run:
         print(json.dumps(manifest, ensure_ascii=False, indent=2))

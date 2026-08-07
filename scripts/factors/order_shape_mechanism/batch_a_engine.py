@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from scripts.factors.order_shape_mechanism.engine import Event, Reservoir, hhmmssmmm_to_seconds, session_name, time_bucket
 
 
-FACTOR_VERSION = "order_shape_batch_a_v1_20260805"
+FACTOR_VERSION = "order_shape_batch_a_sh_remainder_v2_20260807"
 SIDES = ("B", "S")
 
 
@@ -52,6 +52,7 @@ class BatchAQuality:
     candidate_passive_orders: int = 0
     model_passive_orders: int = 0
     excluded_active_orders: int = 0
+    quote_active_remainders_excluded: int = 0
     fill_over_submit: int = 0
     scheduled_target_signals: int = 0
     completed_target_signals: int = 0
@@ -397,6 +398,10 @@ class BatchAEngine:
         price = float(event.price)
         volume = float(event.volume or 0)
         if event.action == "ORDER_ADD":
+            order_id = event.buy_order_id if side == "B" else event.sell_order_id
+            if order_id is not None and (side, int(order_id)) in self.active_order_keys:
+                self.quality.quote_active_remainders_excluded += 1
+                return
             marketable = price >= ask if side == "B" else price <= bid
             aggressive = price >= bid if side == "B" else price <= ask
             if not marketable and aggressive:

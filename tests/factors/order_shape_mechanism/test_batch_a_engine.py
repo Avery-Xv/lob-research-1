@@ -89,6 +89,46 @@ class BatchAEngineTest(unittest.TestCase):
         target_quality = next(value for value in quality if value["date"] == 20260105)
         self.assertGreater(target_quality["completed_target_signals"], 0)
 
+    def test_shanghai_active_remainder_is_excluded_from_quote_signal(self) -> None:
+        engine = BatchAEngine(
+            "SH600000",
+            BatchAConfig(target_month="202601", minimum_fill_history=1),
+        )
+        for row in (
+            event(20260105, 0, 93_800_000),
+            event(
+                20260105,
+                1,
+                93_900_000,
+                "TRADE",
+                "B",
+                102,
+                10,
+                buy_order_id=7,
+                sell_order_id=70,
+            ),
+            event(
+                20260105,
+                2,
+                93_910_000,
+                "ORDER_ADD",
+                "B",
+                101,
+                30,
+                buy_order_id=7,
+            ),
+            event(20260105, 3, 94_000_000),
+            event(20260105, 4, 95_000_000),
+            event(20260105, 5, 112_959_000),
+        ):
+            engine.process(row)
+        rolling = engine._rolling_values()
+        self.assertEqual(rolling["aggressive_add_buy"], 0.0)
+        self.assertEqual(rolling["aggressive_add_sell"], 0.0)
+        _signals, quality = engine.finish()
+        target_quality = next(row for row in quality if row["date"] == 20260105)
+        self.assertEqual(target_quality["quote_active_remainders_excluded"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import glob
+import json
 import os
 import random
 import time
@@ -15,6 +16,7 @@ from typing import Sequence
 import duckdb
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+FACTOR_VERSION = "active_take_midprice_intraday_safe_prebook_v1_20260807"
 
 FIELDS = [
     "symbol",
@@ -31,6 +33,7 @@ FIELDS = [
     "active_take_mid_events",
     "all_mid_move_events",
     "valid_lag_events",
+    "factor_version",
 ]
 
 
@@ -49,22 +52,41 @@ WITH base AS (
         time,
         source_action,
         source_side,
-        bid_px[1]::BIGINT AS bid1,
-        ask_px[1]::BIGINT AS ask1,
-        ((bid_px[1]::DOUBLE + ask_px[1]::DOUBLE) / 2.0) AS mid
+        CASE WHEN array_length(bid_px) > 0 AND array_length(ask_px) > 0
+                   AND bid_px[1] IS NOT NULL AND ask_px[1] IS NOT NULL
+                   AND bid_px[1] > 0 AND ask_px[1] > bid_px[1]
+             THEN bid_px[1]::BIGINT END AS bid1,
+        CASE WHEN array_length(bid_px) > 0 AND array_length(ask_px) > 0
+                   AND bid_px[1] IS NOT NULL AND ask_px[1] IS NOT NULL
+                   AND bid_px[1] > 0 AND ask_px[1] > bid_px[1]
+             THEN ask_px[1]::BIGINT END AS ask1,
+        CASE WHEN array_length(bid_px) > 0 AND array_length(ask_px) > 0
+                   AND bid_px[1] IS NOT NULL AND ask_px[1] IS NOT NULL
+                   AND bid_px[1] > 0 AND ask_px[1] > bid_px[1]
+             THEN (bid_px[1]::DOUBLE + ask_px[1]::DOUBLE) / 2.0 END AS mid
     FROM read_parquet(?, filename=true)
     WHERE time >= ?
       AND time < ?
-      AND array_length(bid_px) > 0
-      AND array_length(ask_px) > 0
 ),
 w AS (
     SELECT
         *,
-        first_value(mid) OVER (PARTITION BY symbol, date ORDER BY row_id) AS start_mid,
-        lag(mid) OVER (PARTITION BY symbol, date ORDER BY row_id) AS prev_mid,
-        lag(bid1) OVER (PARTITION BY symbol, date ORDER BY row_id) AS prev_bid1,
-        lag(ask1) OVER (PARTITION BY symbol, date ORDER BY row_id) AS prev_ask1
+        first_value(mid IGNORE NULLS) OVER (
+            PARTITION BY symbol, date ORDER BY row_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+        ) AS start_mid,
+        last_value(mid IGNORE NULLS) OVER (
+            PARTITION BY symbol, date ORDER BY row_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ) AS prev_mid,
+        last_value(bid1 IGNORE NULLS) OVER (
+            PARTITION BY symbol, date ORDER BY row_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ) AS prev_bid1,
+        last_value(ask1 IGNORE NULLS) OVER (
+            PARTITION BY symbol, date ORDER BY row_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ) AS prev_ask1
     FROM base
 ),
 e AS (
@@ -81,7 +103,7 @@ e AS (
             )
         ) AS is_active_take_mid
     FROM w
-    WHERE prev_mid IS NOT NULL
+    WHERE mid IS NOT NULL AND prev_mid IS NOT NULL
 )
 SELECT
     symbol,
@@ -107,18 +129,25 @@ SELECT
     END AS active_take_mid_gap_signed_over_start_mid,
     count(*) FILTER (WHERE is_active_take_mid) AS active_take_mid_events,
     count(*) FILTER (WHERE abs_delta_mid > 0) AS all_mid_move_events,
-    count(*) AS valid_lag_events
+    count(*) AS valid_lag_events,
+    ? AS factor_version
 FROM e
 GROUP BY symbol, date
 ORDER BY symbol, date
 """
-    return con.execute(query, [list(paths), start_time, end_time, start_time, end_time]).fetchall()
+    return con.execute(
+        query,
+        [list(paths), start_time, end_time, start_time, end_time, FACTOR_VERSION],
+    ).fetchall()
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("inputs", nargs="*", default=["/hdd_data/lob/event_full_depth_v3/202601/*.parquet"])
     parser.add_argument("--file-list", help="Text file with one parquet path per line.")
+    parser.add_argument("--universe-metadata", help="Certified stock-universe metadata JSON.")
+    parser.add_argument("--exchange", choices=("ALL", "SH", "SZ"), default="ALL")
+    parser.add_argument("--months", nargs="+", help="Optional YYYYMM input-month filter.")
     parser.add_argument("--start-time", type=int, default=93000000)
     parser.add_argument("--end-time", type=int, default=100000000)
     parser.add_argument(
@@ -135,6 +164,7 @@ def main() -> int:
     args = parser.parse_args()
 
     paths = []
+    universe_metadata = None
     if args.file_list:
         with open(args.file_list) as f:
             paths.extend(line.strip() for line in f if line.strip())
@@ -143,6 +173,20 @@ def main() -> int:
             continue
         paths.extend(glob.glob(pattern) or [pattern])
     paths = sorted(dict.fromkeys(paths))
+    if args.universe_metadata:
+        universe_metadata = json.loads(Path(args.universe_metadata).read_text())
+        whitelist = universe_metadata.get("security_type_whitelist", {})
+        if universe_metadata.get("output_etf_symbols") != 0:
+            raise ValueError("universe metadata does not certify ETF=0")
+        if whitelist.get("SecuCategory") != [1] or whitelist.get("SecuMarket") != [83, 90]:
+            raise ValueError("universe metadata is not a certified Shanghai/Shenzhen A-share universe")
+    if args.exchange != "ALL":
+        paths = [path for path in paths if Path(path).stem.startswith(args.exchange)]
+    if args.months:
+        months = set(args.months)
+        if any(len(month) != 6 or not month.isdigit() for month in months):
+            raise ValueError("months must use YYYYMM")
+        paths = [path for path in paths if Path(path).parent.name in months]
     if args.sample_files:
         rng = random.Random(args.seed)
         if args.sample_files < len(paths):
@@ -176,7 +220,26 @@ def main() -> int:
             writer.writerows(rows)
             total += len(rows)
             print(f"batch={i} files={len(batch)} rows={len(rows)} elapsed={time.perf_counter()-t0:.2f}s", flush=True)
-    print(f"done files={len(paths)} rows={total} elapsed={time.perf_counter()-started:.2f}s output={args.output}")
+    elapsed = time.perf_counter() - started
+    metadata_output = Path(args.output).with_suffix(".metadata.json")
+    metadata_output.write_text(json.dumps({
+        "factor_version": FACTOR_VERSION,
+        "input_file_list": args.file_list,
+        "input_files": len(paths),
+        "exchange": args.exchange,
+        "months": args.months,
+        "window_start": args.start_time,
+        "window_end": args.end_time,
+        "output_rows": total,
+        "evaluation_neutralization": "none",
+        "universe_rule": "point-in-time A-share stock manifest",
+        "output_etf_symbols": (
+            universe_metadata.get("output_etf_symbols")
+            if universe_metadata is not None else None
+        ),
+        "elapsed_seconds": elapsed,
+    }, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    print(f"done files={len(paths)} rows={total} elapsed={elapsed:.2f}s output={args.output}")
     return 0
 
 

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import glob
+import json
 import math
 import os
 import time
@@ -124,12 +125,11 @@ WITH events AS (
         END AS session,
         source_action,
         source_recid,
-        source_trade_id,
         source_side,
         source_price,
         source_volume,
-        source_buy_order_recid,
-        source_sell_order_recid,
+        source_buy_order_id,
+        source_sell_order_id,
         bid_px[1]::DOUBLE AS bid1,
         ask_px[1]::DOUBLE AS ask1
     FROM read_parquet(?, filename=true)
@@ -139,11 +139,17 @@ WITH events AS (
 continuous AS (
     SELECT
         *,
-        lag(bid1) OVER (
+        last_value(
+            CASE WHEN bid1 > 0 AND ask1 > bid1 THEN bid1 END IGNORE NULLS
+        ) OVER (
             PARTITION BY symbol, date, session ORDER BY row_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
         ) AS pre_bid1,
-        lag(ask1) OVER (
+        last_value(
+            CASE WHEN bid1 > 0 AND ask1 > bid1 THEN ask1 END IGNORE NULLS
+        ) OVER (
             PARTITION BY symbol, date, session ORDER BY row_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
         ) AS pre_ask1
     FROM events
     WHERE session IS NOT NULL
@@ -152,7 +158,8 @@ orders AS (
     SELECT
         symbol,
         date,
-        source_recid AS order_recid,
+        CASE WHEN source_side = 'B' THEN source_buy_order_id
+             WHEN source_side = 'S' THEN source_sell_order_id END AS order_id,
         row_id AS entry_row_id,
         source_side AS order_side,
         CASE
@@ -163,11 +170,15 @@ orders AS (
             ELSE NULL
         END AS initial_gap,
         row_number() OVER (
-            PARTITION BY symbol, date, source_recid ORDER BY row_id
+            PARTITION BY symbol, date,
+                CASE WHEN source_side = 'B' THEN source_buy_order_id
+                     WHEN source_side = 'S' THEN source_sell_order_id END
+            ORDER BY row_id
         ) AS occurrence
     FROM continuous
     WHERE source_action = 'ORDER_ADD'
-      AND source_recid IS NOT NULL
+      AND CASE WHEN source_side = 'B' THEN source_buy_order_id
+               WHEN source_side = 'S' THEN source_sell_order_id END IS NOT NULL
       AND source_price > 0
 ),
 deduplicated_trades AS (
@@ -177,7 +188,7 @@ deduplicated_trades AS (
             *,
             row_number() OVER (
                 PARTITION BY symbol, date,
-                    coalesce(source_trade_id, -row_id)
+                    coalesce(source_recid, -row_id)
                 ORDER BY row_id
             ) AS trade_occurrence
         FROM continuous
@@ -197,15 +208,15 @@ matched AS (
         t.source_volume,
         o.initial_gap,
         th.theta_5d_raw,
-        o.order_recid IS NOT NULL AS is_matched
+        o.order_id IS NOT NULL AS is_matched
     FROM deduplicated_trades t
     INNER JOIN theta th ON th.date = t.date
     LEFT JOIN orders o
       ON o.symbol = t.symbol
      AND o.date = t.date
-     AND o.order_recid = CASE
-            WHEN t.source_side = 'B' THEN t.source_sell_order_recid
-            WHEN t.source_side = 'S' THEN t.source_buy_order_recid
+     AND o.order_id = CASE
+            WHEN t.source_side = 'B' THEN t.source_sell_order_id
+            WHEN t.source_side = 'S' THEN t.source_buy_order_id
          END
      AND o.order_side = CASE
             WHEN t.source_side = 'B' THEN 'S'
@@ -278,7 +289,10 @@ def append_rows(path: str, rows, header: bool) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("inputs", nargs="+", help="Monthly parquet globs.")
+    parser.add_argument("inputs", nargs="*", help="Monthly parquet globs.")
+    parser.add_argument("--file-list", help="Certified stock parquet manifest.")
+    parser.add_argument("--universe-metadata", help="Certified stock-universe metadata JSON.")
+    parser.add_argument("--exchange", choices=("ALL", "SH", "SZ"), default="ALL")
     parser.add_argument("--theta", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--start-time", type=int, default=100000000)
@@ -301,7 +315,25 @@ def main() -> int:
     for rows in theta_by_task.values():
         rows.sort()
 
-    paths = expand_inputs(args.inputs)
+    input_patterns = list(args.inputs)
+    if args.file_list:
+        input_patterns.extend(
+            line.strip() for line in Path(args.file_list).read_text().splitlines()
+            if line.strip()
+        )
+    if not input_patterns:
+        raise ValueError("provide --file-list or parquet inputs")
+    if args.universe_metadata:
+        metadata = json.loads(Path(args.universe_metadata).read_text())
+        whitelist = metadata.get("security_type_whitelist", {})
+        if metadata.get("output_etf_symbols") != 0:
+            raise ValueError("universe metadata does not certify ETF=0")
+        if whitelist.get("SecuCategory") != [1] or whitelist.get("SecuMarket") != [83, 90]:
+            raise ValueError("universe metadata is not a certified Shanghai/Shenzhen A-share universe")
+    paths = expand_inputs(input_patterns)
+    if args.exchange != "ALL":
+        paths = [path for path in paths if Path(path).stem.startswith(args.exchange)]
+    paths = [path for path in paths if task_key(path) in theta_by_task]
     if args.limit_files is not None:
         paths = paths[: args.limit_files]
     completed = (

@@ -27,7 +27,7 @@ import duckdb
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-FACTOR_VERSION = "stylized_fact_4_6_d01_d03_v4_3"
+FACTOR_VERSION = "stylized_fact_4_6_d01_d03_safe_prebook_v1_20260807"
 WINDOWS = (
     ("daily_0930_close", 93_000_000, 145_700_000, "daily"),
     ("daily_1000_close", 100_000_000, 145_700_000, "daily"),
@@ -71,6 +71,12 @@ PRIMITIVE_FIELDS = [
     "valid_impact_events",
     "invalid_book_events",
     "invalid_lag_events",
+    "genuine_passive_add_impact_signed",
+    "aggressive_remainder_impact_signed",
+    "unclassified_add_impact_signed",
+    "genuine_passive_add_events",
+    "aggressive_remainder_events",
+    "unclassified_add_events",
     "factor_version",
 ]
 
@@ -166,13 +172,15 @@ base_unwindowed AS (
         END AS session,
         e.source_action,
         e.source_side,
+        CASE WHEN e.source_side = 'B' THEN e.source_buy_order_id
+             WHEN e.source_side = 'S' THEN e.source_sell_order_id END AS event_order_id,
         CASE
             WHEN array_length(e.bid_px) > 0
              AND array_length(e.ask_px) > 0
              AND e.bid_px[1] IS NOT NULL
              AND e.ask_px[1] IS NOT NULL
              AND e.bid_px[1] > 0
-             AND e.ask_px[1] >= e.bid_px[1]
+             AND e.ask_px[1] > e.bid_px[1]
             THEN true ELSE false
         END AS valid_book,
         CASE
@@ -181,7 +189,7 @@ base_unwindowed AS (
              AND e.bid_px[1] IS NOT NULL
              AND e.ask_px[1] IS NOT NULL
              AND e.bid_px[1] > 0
-             AND e.ask_px[1] >= e.bid_px[1]
+             AND e.ask_px[1] > e.bid_px[1]
             THEN e.bid_px[1]::DOUBLE
         END AS bid1,
         CASE
@@ -190,7 +198,7 @@ base_unwindowed AS (
              AND e.bid_px[1] IS NOT NULL
              AND e.ask_px[1] IS NOT NULL
              AND e.bid_px[1] > 0
-             AND e.ask_px[1] >= e.bid_px[1]
+             AND e.ask_px[1] > e.bid_px[1]
             THEN e.ask_px[1]::DOUBLE
         END AS ask1,
         CASE
@@ -199,7 +207,7 @@ base_unwindowed AS (
              AND e.bid_px[1] IS NOT NULL
              AND e.ask_px[1] IS NOT NULL
              AND e.bid_px[1] > 0
-             AND e.ask_px[1] >= e.bid_px[1]
+             AND e.ask_px[1] > e.bid_px[1]
             THEN (e.bid_px[1]::DOUBLE + e.ask_px[1]::DOUBLE) / 2.0
         END AS mid,
         r.normalizer_price
@@ -215,19 +223,42 @@ base_unwindowed AS (
          OR (e.time >= 130000000 AND e.time < 145700000)
       )
 ),
-base AS (
+base_state AS (
     SELECT
         *,
-        lag(mid) OVER (
+        last_value(mid IGNORE NULLS) OVER (
             PARTITION BY symbol, date, session ORDER BY time, row_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
         ) AS prev_mid,
-        lag(bid1) OVER (
+        last_value(bid1 IGNORE NULLS) OVER (
             PARTITION BY symbol, date, session ORDER BY time, row_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
         ) AS prev_bid1,
-        lag(ask1) OVER (
+        last_value(ask1 IGNORE NULLS) OVER (
             PARTITION BY symbol, date, session ORDER BY time, row_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
         ) AS prev_ask1
     FROM base_unwindowed
+),
+first_active_trade AS (
+    SELECT symbol, date, source_side, event_order_id, min(row_id) AS first_trade_row
+    FROM base_unwindowed
+    WHERE source_action = 'TRADE' AND source_side IN ('B', 'S')
+      AND event_order_id IS NOT NULL
+    GROUP BY symbol, date, source_side, event_order_id
+),
+base AS (
+    SELECT b.*,
+        CASE WHEN b.source_action <> 'ORDER_ADD' THEN NULL
+             WHEN starts_with(b.symbol, 'SZ') THEN 'unclassified'
+             WHEN b.source_side NOT IN ('B', 'S') OR b.event_order_id IS NULL
+               THEN 'unclassified'
+             WHEN t.first_trade_row < b.row_id THEN 'aggressive_remainder'
+             ELSE 'genuine_passive' END AS add_class
+    FROM base_state b
+    LEFT JOIN first_active_trade t
+      ON t.symbol = b.symbol AND t.date = b.date
+     AND t.source_side = b.source_side AND t.event_order_id = b.event_order_id
 ),
 events AS (
     SELECT
@@ -323,6 +354,24 @@ SELECT
     count(delta_mid) AS valid_impact_events,
     count(*) FILTER (WHERE NOT valid_book) AS invalid_book_events,
     count(*) FILTER (WHERE delta_mid IS NULL) AS invalid_lag_events,
+    coalesce(sum(delta_mid) FILTER (
+        WHERE source_action = 'ORDER_ADD' AND add_class = 'genuine_passive'
+    ), 0.0) / 10000.0 AS genuine_passive_add_impact_signed,
+    coalesce(sum(delta_mid) FILTER (
+        WHERE source_action = 'ORDER_ADD' AND add_class = 'aggressive_remainder'
+    ), 0.0) / 10000.0 AS aggressive_remainder_impact_signed,
+    coalesce(sum(delta_mid) FILTER (
+        WHERE source_action = 'ORDER_ADD' AND add_class = 'unclassified'
+    ), 0.0) / 10000.0 AS unclassified_add_impact_signed,
+    count(*) FILTER (
+        WHERE source_action = 'ORDER_ADD' AND add_class = 'genuine_passive'
+    ) AS genuine_passive_add_events,
+    count(*) FILTER (
+        WHERE source_action = 'ORDER_ADD' AND add_class = 'aggressive_remainder'
+    ) AS aggressive_remainder_events,
+    count(*) FILTER (
+        WHERE source_action = 'ORDER_ADD' AND add_class = 'unclassified'
+    ) AS unclassified_add_events,
     ? AS factor_version
 FROM expanded
 GROUP BY symbol, date, frequency, window_name, window_start, window_end
@@ -645,6 +694,7 @@ def main() -> int:
         default=str(PROJECT_ROOT / "data/cache/min1_close_1000_stock_202601.csv"),
         help="Stock-only CSV containing symbol,date,close_1000,security_category.",
     )
+    parser.add_argument("--exchange", choices=("ALL", "SH", "SZ"), default="ALL")
     parser.add_argument("--date-from", type=int, default=20260105)
     parser.add_argument("--date-to", type=int, default=20260107)
     parser.add_argument("--batch-size", type=int, default=4)
@@ -705,6 +755,8 @@ def main() -> int:
 
     stock_symbols = load_stock_symbols(args.reference_file)
     paths = expand_stock_inputs(args.inputs, stock_symbols)
+    if args.exchange != "ALL":
+        paths = [path for path in paths if Path(path).stem.startswith(args.exchange)]
     if args.sample_files is not None and args.sample_files < len(paths):
         paths = sorted(random.Random(args.seed).sample(paths, args.sample_files))
     if args.limit_files is not None:
