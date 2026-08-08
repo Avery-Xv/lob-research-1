@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from scripts.factors.experiment_batch_1.engine import BatchEngine, Event
+from scripts.factors.shared_lob_primitives.engine import BatchEngine, Event
 
 
 def event(
@@ -39,7 +39,7 @@ def event(
     )
 
 
-class ExperimentBatchEngineTest(unittest.TestCase):
+class SharedLobPrimitivesEngineTest(unittest.TestCase):
     def test_chain_impact_and_quote_lifecycle(self) -> None:
         engine = BatchEngine("SH600000")
         rows = [

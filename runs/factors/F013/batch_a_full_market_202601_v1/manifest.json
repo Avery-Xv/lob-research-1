@@ -1,0 +1,31 @@
+{
+  "kind": "factor_run",
+  "factor_id": "F013",
+  "definition_version": "v1",
+  "created_at": "2026-08-08T01:58:48.749563+00:00",
+  "months": [
+    "202601"
+  ],
+  "exchange": "ALL",
+  "signal_window": "1000_1030_signal_1030",
+  "input_manifest": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202510_202602.txt",
+  "input_manifest_sha256": "9307b526e04e411a39a9a685d4921562a717a6fb7f37855f6c6e13ad68584d04",
+  "audit_receipt": "/home/avery/lob-research-1/audits/Q003/q003_202601_12x3_v2/preflight_receipt.json",
+  "audit_receipt_sha256": "b75edcf826bad9d74aac4c8d0a1b354d0daf0a42ac5d5b7726c8c9ea3c227f5c",
+  "data_dependencies": [],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q003",
+    "Q004",
+    "Q005",
+    "Q006"
+  ],
+  "implementation": [
+    "scripts/factors/order_shape_mechanism/engine.py",
+    "scripts/factors/order_shape_mechanism/batch_a_engine.py"
+  ],
+  "purpose": "production",
+  "status": "ready_to_submit",
+  "notes": "全市场非母单 NP01-NP05 上游；5160 只具备 202510-202601 完整历史的 A 股；ETF=0；最终分析仅取 10:30 并以九分域为主。"
+}

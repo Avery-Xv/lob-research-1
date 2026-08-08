@@ -1,0 +1,86 @@
+{
+  "kind": "lob_preflight_receipt",
+  "schema_version": 1,
+  "status": "PASS",
+  "created_at": "2026-08-08T06:12:26.941743+00:00",
+  "passed_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q003",
+    "Q004",
+    "Q005",
+    "Q006",
+    "Q007",
+    "Q008"
+  ],
+  "q003_summary": "/home/avery/lob-research-1/audits/Q003/q003_202601_non_parent_fixed_1030_local_history_v1/summary.json",
+  "q003_summary_sha256": "233016a0e81edd593f1a461c73c8ba0b23f67d72a31800e3659e995edad5644d",
+  "trace_sample": "/home/avery/lob-research-1/audits/Q003/q003_202601_non_parent_fixed_1030_local_history_v1/case_sample.csv",
+  "trace_sample_sha256": "1b174c101cd4879e3117070bb428d98e33ee84955bd0ada8760edd1b42a3168f",
+  "determinism_summary": "/home/avery/lob-research-1/audits/Q006/q006_non_parent_order_state_fixed_1030_local_history_202601_v2/summary.json",
+  "determinism_summary_sha256": "3d0181482cfdf557d23a710bb7fa7104a7e2704736dedbe248c6185a47890710",
+  "trace_order_counts": {
+    "SH": 900,
+    "SZ": 900
+  },
+  "certified_manifests": [
+    {
+      "path": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202510_202602.txt",
+      "sha256": "9307b526e04e411a39a9a685d4921562a717a6fb7f37855f6c6e13ad68584d04",
+      "metadata": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202510_202602.metadata.json",
+      "metadata_sha256": "24f57fbc39827870b29df9f1fd7b64827eaef5aeb4ea9bb50d44eeccc50b4b56",
+      "months": [
+        "202510",
+        "202511",
+        "202512",
+        "202601",
+        "202602"
+      ],
+      "output_etf_symbols": 0,
+      "universe_rule": "point-in-time Shanghai/Shenzhen A shares only: SecuCategory=1, SecuMarket in (83,90), listed by month end, and not terminated before month start"
+    }
+  ],
+  "implementation_sha256": {
+    "scripts/factors/active_take_midprice/intraday_window_factor.py": "f38e3cfed200125b4b83f5a908a50163542cdd37f8e1958b0735b0bdbc53869f",
+    "scripts/factors/joint_large_gap_order_behavior/compute_v4.py": "876fee16260fefbb5fe5e98485ccb134cef6572bf1940acc3985d17e43885457",
+    "scripts/factors/order_behavior_ratio/build_daily_factor.py": "681f62b9de6b6a55a7df6b69e106343a08ed433c67995b214a3dcc6d9e41635d",
+    "scripts/factors/order_behavior_ratio/intraday_window_factor.py": "423ef42c454c6d48c4ceb350271c507ffcff83063ff7cdc2da0f067ce5616c56",
+    "scripts/factors/order_shape_mechanism/compute_non_parent_order_state_v4.py": "a729a62433fce96f174b4f08ebb3bf1ef57ddabd753096e5b5a42cfcc5d21d30",
+    "scripts/factors/order_shape_mechanism/non_parent_order_state_engine.py": "85753702fefd26561f10c148ee6c5ca6581132dc404062a7989855e6498c890e",
+    "scripts/factors/passive_large_gap_ratio/intraday_window_factor.py": "35f67143f21029ce2e524484590f601041282937b653b1798dd4e04280cfd955",
+    "scripts/factors/shared_lob_primitives/engine.py": "f2ec022216887fba1dd482097057915fa3f2dab96b0d0016d063de544edc6334",
+    "scripts/factors/stylized_fact_4_6/reproduce_d01_d03.py": "7f9ebcd17df0544f069d974a47234317714729fe48bf21e04c75c8dbdfbcf220",
+    "scripts/factors/stylized_fact_4_6/reproduce_d07.py": "70ddaabb63aab4437838fcabb352a2f123a0a54a8219d50d54f906177fdf3df4",
+    "scripts/factors/stylized_fact_4_6/reproduce_intraday_d05.py": "61e3af6f4e57dfb24a0ad30f40857b40ec199ef1d6dfec8a7ded9af3d2de73a0",
+    "scripts/pipelines/audit_receipt.py": "3116cefdce6712f5c45be46577e4b3d4d1d551ccd32d656e4d38e2ac934599fc",
+    "scripts/pipelines/complete_factor_run.py": "b8f7d2f8b950d7fdabdf1be01cc41d17972bd9353ecd39ebd665cc44c21e2172",
+    "scripts/pipelines/experiment_pipeline.py": "30d1e45ad6ff369048ab51102d0d5276cd856335d00eb6009d8a5fbf91c72bac",
+    "scripts/pipelines/factor_pipeline.py": "8acd4e4187f02d8dcffd54a6c763405554d1fc7adf01c2d428ce4574cee224da",
+    "scripts/pipelines/preflight.py": "6551654d7c402e222a77835b4802bd713c4aacd0b5efe85aa0db970f7c6c5bec"
+  },
+  "test_command": [
+    "/home/avery/lob-research-1/conda_lob/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "--import-mode=importlib",
+    "tests/factors/shared_lob_primitives/test_engine.py",
+    "tests/factors/order_shape_mechanism/test_non_parent_order_state_engine.py",
+    "tests/factors/order_shape_mechanism/test_batch_determinism.py",
+    "tests/factors/order_shape_mechanism/test_m1_quote_engine.py",
+    "tests/factors/stylized_fact_4_6/test_reproduce_d01_d03.py",
+    "tests/factors/test_order_behavior_intraday_window.py",
+    "tests/factors/test_passive_large_gap_intraday_window.py",
+    "tests/factors/test_joint_large_gap_order_behavior_v4.py",
+    "tests/pipelines/test_registry.py",
+    "tests/pipelines/test_audit_receipt.py",
+    "tests/audits/test_order_remainder_audit.py"
+  ],
+  "test_stdout": "...........................................                              [100%]\n43 passed in 0.91s",
+  "controls": {
+    "Q004": "No forward-linked FULL/PARTIAL fields are used by audited event-state implementations.",
+    "Q006": "Targeted suite includes process-vs-serial byte equality.",
+    "Q007": "Run manifests record immutable input and receipt fingerprints and refuse overwrite.",
+    "Q008": "Registry dependency and implementation-path validation passed."
+  }
+}

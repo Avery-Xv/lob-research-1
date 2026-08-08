@@ -1,0 +1,31 @@
+{
+  "kind": "factor_run",
+  "factor_id": "F010",
+  "definition_version": "sz_v2_sh_pending",
+  "created_at": "2026-08-08T02:00:48.640549+00:00",
+  "months": [
+    "202601"
+  ],
+  "exchange": "ALL",
+  "signal_window": "1000_1030",
+  "input_manifest": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202601_202604.txt",
+  "input_manifest_sha256": "d5802ba97c8514d4bcc70b22363b330315ee4984986f958281d3eadb15700c40",
+  "audit_receipt": "/home/avery/lob-research-1/audits/Q003/q003_202601_12x3_v2/preflight_receipt.json",
+  "audit_receipt_sha256": "b75edcf826bad9d74aac4c8d0a1b354d0daf0a42ac5d5b7726c8c9ea3c227f5c",
+  "data_dependencies": [
+    "P001"
+  ],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q003",
+    "Q005",
+    "Q006"
+  ],
+  "implementation": [
+    "scripts/factors/experiment_batch_1/engine.py"
+  ],
+  "purpose": "production",
+  "status": "ready_to_submit",
+  "notes": "BATCH01 全市场共享事件投影；5185 只 A 股，ETF=0；除 F010 报价 primitive 外同步输出母单 MSI01/02 所需 chain_count、multi_trade_share、chain HHI、entropy、largest share；后续以九分域为主分析。"
+}

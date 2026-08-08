@@ -15,8 +15,8 @@ from registry import REPO_ROOT, load_factors, validate_registries
 
 
 TARGETED_TESTS = (
-    "tests/factors/experiment_batch_1/test_engine.py",
-    "tests/factors/order_shape_mechanism/test_batch_a_engine.py",
+    "tests/factors/shared_lob_primitives/test_engine.py",
+    "tests/factors/order_shape_mechanism/test_non_parent_order_state_engine.py",
     "tests/factors/order_shape_mechanism/test_batch_determinism.py",
     "tests/factors/order_shape_mechanism/test_m1_quote_engine.py",
     "tests/factors/stylized_fact_4_6/test_reproduce_d01_d03.py",

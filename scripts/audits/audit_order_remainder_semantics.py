@@ -19,12 +19,12 @@ import duckdb
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 IMPLEMENTATIONS = (
-    "scripts/factors/experiment_batch_1/engine.py",
+    "scripts/factors/shared_lob_primitives/engine.py",
     "scripts/factors/order_behavior_ratio/intraday_window_factor.py",
     "scripts/factors/passive_large_gap_ratio/intraday_window_factor.py",
     "scripts/factors/joint_large_gap_order_behavior/compute_v4.py",
     "scripts/factors/order_shape_mechanism/m1_quote_engine.py",
-    "scripts/factors/order_shape_mechanism/batch_a_engine.py",
+    "scripts/factors/order_shape_mechanism/non_parent_order_state_engine.py",
     "scripts/factors/stylized_fact_4_6/reproduce_d01_d03.py",
 )
 CASE_FIELDS = (

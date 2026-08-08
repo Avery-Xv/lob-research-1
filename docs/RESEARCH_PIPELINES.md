@@ -24,7 +24,7 @@
 
 - `research/factors.json`：`F001-F017` 因子总账；记录理论、实现、数据依赖和必过质量门。
 - `research/experiments.json`：`R001-R025` 研究实验；每项强制包含 `research_question`、`research_outputs` 和 `decision_rule`。
-- `research/data_products.json`：公共数据产品。原 BATCH01 现在是 `P001`，Batch A 缓存是 `P002`。
+- `research/data_products.json`：公共数据产品。共享 LOB 原语为 `P001`，非母单订单状态缓存为 `P002`。
 - `research/quality_gates.json`：工程检查。原 PB01 被拆入 `Q003` 及受影响因子的定义版本，不再占实验编号。
 
 原 RG01 是统一评估流程，也不再作为实验。raw 收益、稳健性、成本和中性化要求直接写进对应 `R` 的输出与判据。
@@ -43,7 +43,7 @@
 | R020 | 近端大单遮挡与深档撤单机制 | DR01-DR05 |
 | R021-R025 | 执行链/推断片段的五阶段研究 | MSI-A 至 MSI-E |
 
-PB01、BATCH01、RG01 没有映射到 `R`，因为它们分别属于口径修复、公共计算产物和统一评估流程。
+PB01、P001、RG01 没有映射到 `R`，因为它们分别属于口径修复、公共计算产物和统一评估流程。
 
 ## 4. 逻辑链路
 

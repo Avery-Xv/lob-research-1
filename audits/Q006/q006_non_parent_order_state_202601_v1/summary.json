@@ -1,0 +1,53 @@
+{
+  "kind": "non_parent_order_state_real_sample_determinism",
+  "schema_version": 1,
+  "status": "PASS",
+  "created_at": "2026-08-08T02:56:50.945445+00:00",
+  "symbols": [
+    "SH600000",
+    "SZ000001"
+  ],
+  "signal_time": 1030,
+  "checks": {
+    "byte_identical": true,
+    "same_symbols": true,
+    "both_exchanges": true,
+    "signal_rows_equal": true
+  },
+  "implementations": {
+    "scripts/factors/order_shape_mechanism/non_parent_order_state_engine.py": "102a547aceee74e86d9ba28f5c3d809f6bf2ab32f7d2066a1c8e7681d8fb7929",
+    "scripts/factors/order_shape_mechanism/compute_non_parent_order_state_v4.py": "e2e7c41c2ba1398f8ed62a1c53fe910d6c9eff01bf52b6dd041a487e5cd55dcd"
+  },
+  "serial": {
+    "root": "/tmp/non_parent_state_serial_1030_20260808",
+    "signal_rows": 40,
+    "hashes": {
+      "batch_000001": {
+        "signals.csv": "5f2bfa9e15c3c184499d337f1c49a56a7d9016a665a15c1b9b8026d628716b7b",
+        "quality.csv": "9af54bc2f8a63c7ab4858c9745fe0793675ea789ee27d6503be68472a521d353",
+        "done.json": "e5393b0094c2cd2d2ae6e190c05ec5da05df6cd4eb69f946e04d8869f3c1830d"
+      },
+      "batch_000002": {
+        "signals.csv": "077cfeee52c7b02d82f8196fbe66cf6250236243b0104e3ab8610a63ef014b9f",
+        "quality.csv": "d3c337d4984ea526afd020706fd0c5138130733a3e01aa12afb1b3ac69842356",
+        "done.json": "38af8a062cb01399ccdf00d630a247f50b5d5ae909462a58541327a909f34a18"
+      }
+    }
+  },
+  "parallel": {
+    "root": "/tmp/non_parent_state_parallel_1030_20260808",
+    "signal_rows": 40,
+    "hashes": {
+      "batch_000001": {
+        "signals.csv": "5f2bfa9e15c3c184499d337f1c49a56a7d9016a665a15c1b9b8026d628716b7b",
+        "quality.csv": "9af54bc2f8a63c7ab4858c9745fe0793675ea789ee27d6503be68472a521d353",
+        "done.json": "e5393b0094c2cd2d2ae6e190c05ec5da05df6cd4eb69f946e04d8869f3c1830d"
+      },
+      "batch_000002": {
+        "signals.csv": "077cfeee52c7b02d82f8196fbe66cf6250236243b0104e3ab8610a63ef014b9f",
+        "quality.csv": "d3c337d4984ea526afd020706fd0c5138130733a3e01aa12afb1b3ac69842356",
+        "done.json": "38af8a062cb01399ccdf00d630a247f50b5d5ae909462a58541327a909f34a18"
+      }
+    }
+  }
+}

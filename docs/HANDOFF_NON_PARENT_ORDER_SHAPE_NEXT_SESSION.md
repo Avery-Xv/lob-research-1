@@ -13,7 +13,7 @@
 
 普通主动流 M1 只作为基准和控制变量，不作为新的研究主题。母单方向另见 [`母单结构与执行阶段_衍生因子研究手册.md`](母单结构与执行阶段_衍生因子研究手册.md)。
 
-本 session 的首要目标不是直接生产收益因子，而是利用现有 Batch A 缓存完成三个非母单方向的机制筛选和未来收益准备：
+本 session 的首要目标不是直接生产收益因子，而是利用非母单订单状态缓存完成三个非母单方向的机制筛选和未来收益准备：
 
 1. M6 成交机会惊奇；
 2. 盘口—成交流背离；
@@ -48,10 +48,12 @@
 
 ## 4. 可复用输入
 
-### 4.1 Batch A 信号缓存
+### 4.1 非母单订单状态缓存
+
+当前生产定义为 `fixed_1030_local_history_v2`：每日只扫描 `[09:59,10:41)`；订单模型接收 `[09:59,10:40)` 的委托，最后一分钟仅用于完成60秒成交标签。
 
 ```text
-data/cache/order_shape_mechanism/batch_a_medium300_202601_v1/
+data/cache/non_parent_order_state/fixed_1030_local_history_full_market_202601_v2/
 ```
 
 关键文件：
@@ -62,14 +64,13 @@ batch_*/signals.csv
 batch_*/quality.csv
 ```
 
-缓存包含 124,980 条完整信号、20 日 × 21 时点，原始 LOB 不需要重读。主字段：
+完成后预计最多包含 103,200 条信号（5,160 只 × 20 日 × 每日 1 个 10:30 时点），原始 LOB 不需要重读。主字段：
 
 | 类别 | 字段 |
 |---|---|
 | 标识 | `symbol`, `date`, `signal_seconds`, `signal_time` |
 | 普通主动流 | `active_buy_volume`, `active_sell_volume`, `active_buy_count`, `active_sell_count`, `active_net_share` |
 | 挂单成交机会 | `pred_fill_buy`, `pred_fill_sell`, `fill_history_buy`, `fill_history_sell` |
-| 新增委托 | `aggressive_add_buy`, `aggressive_add_sell` |
 | 近端撤单 | `near_cancel_buy`, `near_cancel_sell` |
 | 盘口 | `spread_bps`, `bid_depth3`, `ask_depth3`, `book_imbalance3` |
 | 未来直接目标 | `future_buy_volume`, `future_sell_volume`, `future_buy_count`, `future_sell_count`, `future_event_count`, `future_realized_vol_bps` |
@@ -112,7 +113,7 @@ momentum, liquidity, beta, residual_volatility
 
 `size` 和 `non_linear_size` 不进入回归，但必须输出原始 Rank 暴露。协议默认的 `LOB5-ex-size` 可作为单独敏感性结果，不能覆盖主规格。
 
-## 5. 第一批候选因子
+## 5. 可直接读取状态缓存检验的候选因子
 
 ## NP01：M6 成交机会惊奇
 
@@ -237,9 +238,9 @@ $$
 - 总量和方向差分别进入模型，避免把撤单总量误解释成方向；
 - 九域均报告，不接受单域 headline。
 
-## 6. 第二批候选：需要新增一次投影读取
+## 6. 需要新增一次投影读取的候选
 
-现有 Batch A 缓存没有完整保存过去窗口中间价路径、全部事件到达数和深度恢复轨迹。以下方向需要新的一次性投影读取，但应在第一批完成后再做。
+非母单订单状态缓存没有完整保存过去窗口中间价路径、全部事件到达数和深度恢复轨迹。以下方向需要新的一次性投影读取，但应在当前候选完成后再做。
 
 | 因子族 | 需要新增的过去窗口原始量 | 主要目标 |
 |---|---|---|
@@ -258,7 +259,7 @@ results/intraday/order_shape_non_parent/
 tests/factors/order_shape_non_parent/
 ```
 
-每个 stock-month 在同一版本中最多读取一次，并在一次扫描内输出全部第二批共享原始量。
+每个 stock-month 在同一版本中最多读取一次，并在一次扫描内输出全部新增投影共享原始量。
 
 ## 7. 回测口径
 
@@ -299,19 +300,19 @@ manifest 至少记录 universe 规则、ETF 数、输入路径和哈希、特征
 5. 验证风格使用前一交易日；
 6. 验证 ETF 为 0；
 7. 相同小样本串行与并行逐字段比较；
-8. 第一批只读缓存全量计算；
-9. 审计九域、21 时点和20日期覆盖；
-10. 用户审阅后再接收益或启动第二批 LOB 读取。
+8. 只读状态缓存做全市场计算；
+9. 审计九域、10:30 单时点和20日期覆盖；
+10. 用户审阅后再接收益或启动新增 LOB 投影读取。
 
 ## 9. 可复用代码与结果
 
 ### 9.1 代码
 
-- [`batch_a_engine.py`](../scripts/factors/order_shape_mechanism/batch_a_engine.py)：固定时点与缓存字段定义；
-- [`reproduce_batch_a_v4.py`](../scripts/factors/order_shape_mechanism/reproduce_batch_a_v4.py)：单扫描、分片、断点续跑；
+- [`non_parent_order_state_engine.py`](../scripts/factors/order_shape_mechanism/non_parent_order_state_engine.py)：固定时点与缓存字段定义；
+- [`compute_non_parent_order_state_v4.py`](../scripts/factors/order_shape_mechanism/compute_non_parent_order_state_v4.py)：单扫描、分片、断点续跑；
 - [`backtest_order_shape_batch_a_domains.py`](../scripts/backtests/backtest_order_shape_batch_a_domains.py)：四风格九域直接目标回测；
 - [`backtest_order_shape_batch_a_incremental.py`](../scripts/backtests/backtest_order_shape_batch_a_incremental.py)：控制 M1 的条件增量回测；
-- [`test_batch_a_engine.py`](../tests/factors/order_shape_mechanism/test_batch_a_engine.py)：时间边界测试；
+- [`test_non_parent_order_state_engine.py`](../tests/factors/order_shape_mechanism/test_non_parent_order_state_engine.py)：时间边界测试；
 - [`test_order_shape_batch_a_domains.py`](../tests/backtests/test_order_shape_batch_a_domains.py)；
 - [`test_order_shape_batch_a_incremental.py`](../tests/backtests/test_order_shape_batch_a_incremental.py)。
 
@@ -325,7 +326,7 @@ manifest 至少记录 universe 规则、ETF 数、输入路径和哈希、特征
 
 ### Phase A：不重读 LOB
 
-1. 新增一个只读 Batch A 缓存的非母单分析脚本；
+1. 新增一个只读 非母单订单状态缓存的非母单分析脚本；
 2. 实现 NP01--NP05 的原始量和预注册版本；
 3. 首先复现已知结果和符号；
 4. 对每个候选做四风格中性、M1 线性和 M1 三次控制；
@@ -335,18 +336,18 @@ manifest 至少记录 universe 规则、ETF 数、输入路径和哈希、特征
 建议脚本：
 
 ```text
-scripts/backtests/backtest_order_shape_non_parent_batch_b.py
+scripts/backtests/backtest_non_parent_direct_targets.py
 ```
 
 建议输出：
 
 ```text
-results/intraday/order_shape_non_parent/batch_b_medium300_202601_v1/
+results/intraday/order_shape_non_parent/non_parent_direct_targets_full_market_202601_v1/
 ```
 
 ### Phase B：收益标签
 
-仅将 Phase A 通过的候选接入未来 1/5/10 分钟收益。Batch A 缓存不包含收益标签，必须先审计可用分钟行情或从 V4 构造严格时点后的中间价/可成交报价。不得假设仓库中某个既有分钟缓存覆盖全部 21 个信号时点。
+仅将 Phase A 通过的候选接入未来 1/5/10 分钟收益。非母单订单状态缓存不包含收益标签，必须先审计可用分钟行情或从 V4 构造严格时点后的中间价/可成交报价。不得假设仓库中某个既有分钟缓存覆盖全部 21 个信号时点。
 
 ### Phase C：新增一次 LOB 投影读取
 
@@ -366,4 +367,4 @@ results/intraday/order_shape_non_parent/batch_b_medium300_202601_v1/
 
 ## 12. 下一 Session 可直接使用的任务
 
-> 阅读 `docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md`、仓库 `AGENTS.md` 及其中列出的必读文档。严格排除母单链和隐藏母单变量，只复用 `batch_a_medium300_202601_v1` 信号缓存实现 NP01--NP05。先核对字段方向，尤其是 `execution_pressure = pred_fill_sell - pred_fill_buy`，并确认撤单字段为过去60秒撤单量。主规格沿用 `LOB4-ex-size-and-nonlinear-size`，日内使用前一交易日四风格；分别报告九域、域中性汇总和全市场诊断。先完成合成测试、时间边界、ETF为零和输出schema检查，再跑300只股票直接目标实验。不要重读LOB，不要接收益标签，直到直接目标结果和继续/停止清单经审阅。
+> 阅读 `docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md`、仓库 `AGENTS.md` 及其中列出的必读文档。严格排除母单链和隐藏母单变量，只复用 `data/cache/non_parent_order_state/fixed_1030_local_history_full_market_202601_v2` 全市场信号缓存实现 NP01--NP05。先核对字段方向，尤其是 `execution_pressure = pred_fill_sell - pred_fill_buy`，并确认撤单字段为过去60秒撤单量。主规格沿用 `LOB4-ex-size-and-nonlinear-size`，日内使用前一交易日四风格；以九域差异为主、交易所差异为辅，同时报告域中性汇总和全市场诊断。先完成合成测试、时间边界、ETF为零和输出schema检查，再跑全市场直接目标实验。不要重读LOB，不要接收益标签，直到直接目标结果和继续/停止清单经审阅。

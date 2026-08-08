@@ -1,0 +1,53 @@
+{
+  "kind": "non_parent_order_state_real_sample_determinism",
+  "schema_version": 1,
+  "status": "PASS",
+  "created_at": "2026-08-08T06:12:25.759967+00:00",
+  "symbols": [
+    "SH600000",
+    "SZ000001"
+  ],
+  "signal_time": 1030,
+  "checks": {
+    "byte_identical": true,
+    "same_symbols": true,
+    "both_exchanges": true,
+    "signal_rows_equal": true
+  },
+  "implementations": {
+    "scripts/factors/order_shape_mechanism/non_parent_order_state_engine.py": "85753702fefd26561f10c148ee6c5ca6581132dc404062a7989855e6498c890e",
+    "scripts/factors/order_shape_mechanism/compute_non_parent_order_state_v4.py": "a729a62433fce96f174b4f08ebb3bf1ef57ddabd753096e5b5a42cfcc5d21d30"
+  },
+  "serial": {
+    "root": "/tmp/non_parent_fixed_1030_serial_20260808",
+    "signal_rows": 40,
+    "hashes": {
+      "batch_000001": {
+        "signals.csv": "92530b15e9e994424d4d8e59d0093ef433f358bd1a614882d0bce8b6d5e61d5f",
+        "quality.csv": "3a4013416f5c709888316af17b56ae447a265a6089780c9e26b9a9aac2e5b1bb",
+        "done.json": "3074f9e37bde80e2a08c08544790d46d101d79246d1cfd332201debad835aab0"
+      },
+      "batch_000002": {
+        "signals.csv": "81f5c807194ee10125f66186a4a2089b80c8ee763406b3da08c4176f1c17a022",
+        "quality.csv": "a4c98c52d2e69b97119cd30bc854a62fa32c51666257bef3b10666b1269dc86b",
+        "done.json": "72726403b208564557fa4cdfe6ab4b12b3c37c90c445d84bd9330a648587e072"
+      }
+    }
+  },
+  "parallel": {
+    "root": "/tmp/non_parent_fixed_1030_parallel_20260808",
+    "signal_rows": 40,
+    "hashes": {
+      "batch_000001": {
+        "signals.csv": "92530b15e9e994424d4d8e59d0093ef433f358bd1a614882d0bce8b6d5e61d5f",
+        "quality.csv": "3a4013416f5c709888316af17b56ae447a265a6089780c9e26b9a9aac2e5b1bb",
+        "done.json": "3074f9e37bde80e2a08c08544790d46d101d79246d1cfd332201debad835aab0"
+      },
+      "batch_000002": {
+        "signals.csv": "81f5c807194ee10125f66186a4a2089b80c8ee763406b3da08c4176f1c17a022",
+        "quality.csv": "a4c98c52d2e69b97119cd30bc854a62fa32c51666257bef3b10666b1269dc86b",
+        "done.json": "72726403b208564557fa4cdfe6ab4b12b3c37c90c445d84bd9330a648587e072"
+      }
+    }
+  }
+}
