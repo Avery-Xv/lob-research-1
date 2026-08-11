@@ -1,0 +1,31 @@
+{
+  "kind": "research_run",
+  "research_id": "R017",
+  "spec_version": "v1",
+  "created_at": "2026-08-09T04:31:53.480265+00:00",
+  "research_question": "盘口状态持续但主动流反向响应的背离是否解释未来盘口、订单流、波动与收益？",
+  "decision_rule": "若只是盘口不平衡重标度则停止。",
+  "factor_runs": {
+    "F014": "/home/avery/lob-research-1/runs/factors/F014/non_parent_candidates_fixed_1030_full_market_202601_v3_lineage/completion.json"
+  },
+  "data_dependencies": [
+    "P002"
+  ],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q004",
+    "Q005",
+    "Q006",
+    "Q007",
+    "Q008"
+  ],
+  "research_outputs": [
+    "二维状态",
+    "条件残差",
+    "直接目标与收益"
+  ],
+  "result_root": "results/research/R017",
+  "status": "planned",
+  "notes": "九分域raw直接目标为主，交易所为辅助；研究实现哈希写入结果manifest；空IC按目标/日期独立缺失，不做共同样本交集。"
+}

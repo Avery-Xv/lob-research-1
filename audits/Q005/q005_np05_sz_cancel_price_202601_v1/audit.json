@@ -1,0 +1,58 @@
+{
+  "kind": "semantic_audit_receipt",
+  "quality_gate": "Q005",
+  "audit_id": "q005_np05_sz_cancel_price_202601_v1",
+  "created_at": "2026-08-09",
+  "status": "FAIL",
+  "scope": "F013 near-cancel fields consumed by F014/NP05 and R018",
+  "evidence": {
+    "full_market_source_distribution": {
+      "SH": {
+        "rows": 45205,
+        "rows_near_cancel_buy_positive": "widely positive",
+        "rows_near_cancel_sell_positive": "widely positive"
+      },
+      "SZ": {
+        "rows": 56789,
+        "rows_near_cancel_buy_positive": 0,
+        "rows_near_cancel_sell_positive": 55019,
+        "near_cancel_buy_sum": 0,
+        "near_cancel_sell_sum": "approximately 2.919e9",
+        "signed_equals_absolute_rows": 56789
+      }
+    },
+    "raw_trace_files": [
+      "/hdd_data/lob/event_depth10_v4/202601/SH600000.parquet",
+      "/hdd_data/lob/event_depth10_v4/202601/SZ000001.parquet"
+    ],
+    "raw_trace_window": "[10:29,10:30)",
+    "raw_trace": {
+      "SH600000": {
+        "buy_cancels": 1092,
+        "sell_cancels": 737,
+        "buy_price_range": [90500, 118900],
+        "sell_price_range": [99500, 136800]
+      },
+      "SZ000001": {
+        "buy_cancels": 1008,
+        "sell_cancels": 879,
+        "buy_source_price_range": [0, 0],
+        "sell_source_price_range": [0, 0],
+        "buy_order_id_side_consistent": 1008,
+        "sell_order_id_side_consistent": 879,
+        "buy_price_recoverable_from_prior_same_day_add": 1008,
+        "sell_price_recoverable_from_prior_same_day_add": 878,
+        "buy_price_recoverable_from_add_since_0930": 975,
+        "sell_price_recoverable_from_add_since_0930": 859
+      }
+    }
+  },
+  "root_cause": "The engine classifies a cancellation as near using source_price. Shenzhen V4 CANCEL rows retain the correct side/order ID but source_price is zero, so every buy cancellation fails the buy-side near test while sell cancellations mechanically pass the sell-side test.",
+  "impact": {
+    "blocked": ["R018", "NP05"],
+    "not_affected_by_this_defect": ["R014", "R015", "R016", "R017"],
+    "reason": "NP01-NP04 do not consume near_cancel_buy or near_cancel_sell."
+  },
+  "required_remediation": "Recover Shenzhen cancellation price point-in-time from the same-side active order state keyed by (date, side, order_id), including auction-origin orders, add Shanghai/Shenzhen cancellation traces and serial/parallel equality tests, issue a new preflight receipt and append-only F013/F014/R018 run IDs.",
+  "decision": "Do not interpret or promote the existing R018 statistics."
+}

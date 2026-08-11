@@ -337,7 +337,7 @@
       "legacy_aliases": [
         "NP01"
       ],
-      "status": "planned",
+      "status": "mechanism_failed_single_month",
       "research_question": "控制普通主动流后，成交机会差是否仍预测未来主动流、活动度及收益？",
       "factor_dependencies": [
         "F014"
@@ -363,7 +363,7 @@
       "legacy_aliases": [
         "NP02"
       ],
-      "status": "planned",
+      "status": "mechanism_passed_single_month",
       "research_question": "总体可成交性在控制当前活动度和盘口后是否预测未来活动、波动和流动性？",
       "factor_dependencies": [
         "F014"
@@ -390,13 +390,14 @@
       "legacy_aliases": [
         "NP03"
       ],
-      "status": "planned",
+      "status": "mechanism_passed_single_month",
       "research_question": "M1 与成交机会强弱的确认/冲突状态是否预测订单流衰减或价格反转？",
       "factor_dependencies": [
         "F014"
       ],
       "data_dependencies": [
-        "P002"
+        "P002",
+        "P003"
       ],
       "research_outputs": [
         "连续交互",
@@ -408,7 +409,7 @@
         "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"
       ],
       "result_root": "results/research/R016",
-      "spec_version": "v1"
+      "spec_version": "v2_window_path"
     },
     {
       "id": "R017",
@@ -416,25 +417,28 @@
       "legacy_aliases": [
         "NP04"
       ],
-      "status": "planned",
+      "status": "mechanism_passed_candidate_factor_single_month",
       "research_question": "盘口状态持续但主动流反向响应的背离是否解释未来盘口、订单流、波动与收益？",
       "factor_dependencies": [
-        "F014"
+        "F014",
+        "F018"
       ],
       "data_dependencies": [
-        "P002"
+        "P003"
       ],
       "research_outputs": [
         "二维状态",
         "条件残差",
-        "直接目标与收益"
+        "直接目标与收益",
+        "F018短周期收益候选"
       ],
-      "decision_rule": "若只是盘口不平衡重标度则停止。",
+      "decision_rule": "若只是盘口不平衡重标度则停止；F018须冻结定义跨月复现并通过增量、成本和容量检验后才能晋级。",
       "theory_sources": [
-        "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md"
+        "docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md",
+        "research/candidate_factors/F018_minus_flow_to_opponent_depth/README.md"
       ],
       "result_root": "results/research/R017",
-      "spec_version": "v1"
+      "spec_version": "v3_candidate_factor"
     },
     {
       "id": "R018",
@@ -442,7 +446,7 @@
       "legacy_aliases": [
         "NP05"
       ],
-      "status": "planned",
+      "status": "paused",
       "research_question": "无方向撤单强度是否跨域预测波动、点差扩大和深度下降？",
       "factor_dependencies": [
         "F014"

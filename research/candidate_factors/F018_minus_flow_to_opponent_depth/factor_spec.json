@@ -1,0 +1,241 @@
+{
+  "schema_version": 1,
+  "factor_id": "F018",
+  "name": "对手盘深度归一化主动流反转",
+  "canonical_name": "minus_flow_to_opponent_depth",
+  "status": "candidate_single_month",
+  "candidate_mode": "continuous_liquidity_weighted_ranking",
+  "definition_version": "fixed_1030_flow5_opponent_depth_x_liquidity_rank_v2_candidate",
+  "base_definition_version": "fixed_1030_flow5_opponent_depth_twap_v1",
+  "research_ids": [
+    "R017"
+  ],
+  "source_product": "P003",
+  "signal": {
+    "window": "[10:25:00,10:30:00)",
+    "timestamp": "10:30:00",
+    "direction": "sign(flow5m_buy_volume-flow5m_sell_volume)",
+    "buy_pressure_branch": "-log1p(flow5m_buy_volume/book5m_ask3_twap)",
+    "sell_pressure_branch": "+log1p(flow5m_sell_volume/book5m_bid3_twap)",
+    "zero_flow": 0,
+    "higher_means": "stronger sell pressure relative to bid-side depth; expected short-horizon rebound",
+    "continuous_composite": {
+      "base": "2*within_date_domain_pct_rank(F018)-1",
+      "liquidity_quality": "equal-weight mean of tight-spread, total-depth, active-volume, and active-order-count percentile ranks",
+      "liquidity_weight": "within_date_domain_pct_rank(liquidity_quality)",
+      "primary_score": "base*liquidity_weight",
+      "liquidity_supplies_direction": false
+    }
+  },
+  "book_semantics": {
+    "levels": 3,
+    "aggregation": "valid-book duration-weighted mean over five minutes",
+    "invalid_book_rule": "missing, locked, or crossed rows do not replace the last valid uncrossed book",
+    "reset_rule": "reset at date and continuous-auction session boundaries"
+  },
+  "evaluation": {
+    "universe": "point-in-time SH/SZ A-share stock whitelist; ETF=0",
+    "primary_scope": "raw non-neutralized frozen nine domains",
+    "entry": "10:31 minute close",
+    "exits": [
+      "10:35 minute close",
+      "10:40 minute close",
+      "11:00 minute close",
+      "15:00 minute close"
+    ],
+    "month": 202601,
+    "stock_days": 100837,
+    "future_filter_used": false
+  },
+  "primary_evidence": [
+    {
+      "horizon": "10:31-10:35",
+      "rank_ic": 0.031394248162471244,
+      "rank_ic_t": 2.597758499859516,
+      "d10_d1": 0.00008105160748739301,
+      "d10_d1_t": 0.6067241959767503
+    },
+    {
+      "horizon": "10:31-10:40",
+      "rank_ic": 0.039632806729466834,
+      "rank_ic_t": 2.568434334700891,
+      "d10_d1": 0.0002514313428361905,
+      "d10_d1_t": 1.1064898778614731
+    },
+    {
+      "horizon": "10:31-10:45",
+      "rank_ic": 0.031539098666514595,
+      "rank_ic_t": 1.9555151428652855,
+      "d10_d1": 0.0002698559450354873,
+      "d10_d1_t": 0.9468186708430748
+    },
+    {
+      "horizon": "10:31-11:00",
+      "rank_ic": 0.023152916802744627,
+      "rank_ic_t": 2.149032134737767,
+      "d10_d1": 0.0004282871758253951,
+      "d10_d1_t": 1.3605821459698995
+    },
+    {
+      "horizon": "10:31-15:00",
+      "rank_ic": 0.011282191717535667,
+      "rank_ic_t": 0.7400640446675107,
+      "d10_d1": 0.00025251663590294715,
+      "d10_d1_t": 0.35701278381741824
+    }
+  ],
+  "incremental_control_evidence": {
+    "method": "within date x frozen domain, 1/99 winsorize factor and controls, residualize factor only; returns are not residualized",
+    "controls": {
+      "flow_cubic": [
+        "flow5",
+        "flow5_sq",
+        "flow5_cube"
+      ],
+      "flow_cubic_prereturn": [
+        "flow5",
+        "flow5_sq",
+        "flow5_cube",
+        "pre_return_5m",
+        "abs_pre_return_5m"
+      ],
+      "full_intraday_state": [
+        "flow5",
+        "flow5_sq",
+        "flow5_cube",
+        "pre_return_5m",
+        "abs_pre_return_5m",
+        "log_active_volume_5m",
+        "log_active_count_5m",
+        "log_spread_5m_twap",
+        "log_depth3_5m_twap"
+      ]
+    },
+    "factor_r_squared": {
+      "flow_cubic": 0.5869533459429125,
+      "flow_cubic_prereturn": 0.6228376047691025,
+      "full_intraday_state": 0.6509174370285583
+    },
+    "full_intraday_state_rank_ic": {
+      "10:31-10:35": {"rank_ic": 0.007707462259022248, "rank_ic_t": 1.9638998269406172},
+      "10:31-10:40": {"rank_ic": 0.01080046234799871, "rank_ic_t": 3.2040596707540976},
+      "10:31-11:00": {"rank_ic": 0.014341330828423144, "rank_ic_t": 3.073724925710325},
+      "10:31-15:00": {"rank_ic": 0.011715247259431643, "rank_ic_t": 2.489973212735219}
+    },
+    "decision": "retain as a continuous-ranking or combination component; do not promote as a standalone tail-trading factor"
+  },
+  "liquidity_conditioning_evidence": {
+    "gate": {
+      "partition": "within date x frozen domain",
+      "score": "equal-weight mean of tight-spread, total-depth, active-volume, and active-order-count percentile ranks",
+      "enabled_state": "highest equal-count tercile",
+      "future_return_used": false
+    },
+    "coverage": 0.330079235505023,
+    "enabled_rank_ic": {
+      "10:31-10:35": {"rank_ic": 0.038384545164104666, "rank_ic_t": 2.6133395022606556},
+      "10:31-10:40": {"rank_ic": 0.04974321230801084, "rank_ic_t": 3.11073138937981},
+      "10:31-11:00": {"rank_ic": 0.039924495502474025, "rank_ic_t": 2.8723968748755158},
+      "10:31-15:00": {"rank_ic": 0.008469105095545696, "rank_ic_t": 0.4724669775785623}
+    },
+    "enabled_d10_d1": {
+      "10:31-10:35": {"d10_d1": 0.00012454496023281766, "d10_d1_t": 0.63068592288187},
+      "10:31-10:40": {"d10_d1": 0.00035900933474057595, "d10_d1_t": 1.0894469608209278},
+      "10:31-11:00": {"d10_d1": 0.0008498845297504114, "d10_d1_t": 1.635344754170553}
+    },
+    "paired_contrasts": {
+      "30m_high_minus_low_rank_ic": 0.03993152526537073,
+      "30m_high_minus_low_rank_ic_t": 3.8958492172010804,
+      "30m_high_minus_all_rank_ic": 0.016771578699729395,
+      "30m_high_minus_all_rank_ic_t": 3.1383404962698322
+    },
+    "flow5_benchmark_in_enabled_state": {
+      "10m_rank_ic": -0.008723987837340949,
+      "30m_rank_ic": -0.0190715445397109
+    },
+    "decision": "pre-specified high-liquidity activation rule passes for continuous-ranking F018; tail spread and cross-month replication remain insufficient"
+  },
+  "continuous_composite_evidence": {
+    "primary_formula": "(2*within_date_domain_pct_rank(F018)-1)*within_date_domain_pct_rank(liquidity_quality)",
+    "score_rows": 100837,
+    "performance": {
+      "10:31-10:35": {"rank_ic": 0.030851356711427767, "rank_ic_t": 2.4285520390384514, "d10_d1": 0.00012949445798634342, "d10_d1_t": 0.8506760010846011},
+      "10:31-10:40": {"rank_ic": 0.04000962095907193, "rank_ic_t": 2.5510600957681713, "d10_d1": 0.0002842078176285622, "d10_d1_t": 1.0870707336831194},
+      "10:31-11:00": {"rank_ic": 0.024220069548410196, "rank_ic_t": 2.1797492254489303, "d10_d1": 0.0005656178317055455, "d10_d1_t": 1.7788400178383739},
+      "10:31-15:00": {"rank_ic": 0.010370903546581397, "rank_ic_t": 0.6569439142804762, "d10_d1": 0.0002543464938004329, "d10_d1_t": 0.3147677386538873}
+    },
+    "paired_delta_vs_raw": {
+      "10m_rank_ic": 0.0003768142296050951,
+      "10m_rank_ic_t": 0.3069605500332526,
+      "30m_rank_ic": 0.0010671527456655677,
+      "30m_rank_ic_t": 0.7340839086960146,
+      "30m_d10_d1": 0.00013733065588015044,
+      "30m_d10_d1_t": 1.1129299401231327
+    },
+    "robustness_30m_d10_d1": {
+      "square_weight": 0.0005099831330536625,
+      "floor25_weight": 0.0005736284512132715
+    },
+    "liquidity_only_10m_d10_d1": {"value": 0.0007077229121816234, "t": 3.2069654643915224},
+    "decision": "register linear score as a continuous composite candidate for portfolio engineering; raw F018 remains mandatory baseline because paired IC improvement is not significant"
+  },
+  "continuous_soft_threshold_evidence": {
+    "primary_formula": "B*clip((L-1/3)/(2/3),0,1)",
+    "robustness_formula": "B*smoothstep(clip((L-1/3)/(2/3),0,1))",
+    "zero_weight_rows": 33674,
+    "zero_weight_share": 0.33394488134315775,
+    "hinge_performance": {
+      "10:31-10:35": {"rank_ic": 0.02946850085220604, "rank_ic_t": 2.442595991967784, "d10_d1": 0.00010781669206276338, "d10_d1_t": 0.7111390745633901},
+      "10:31-10:40": {"rank_ic": 0.040060804213606624, "rank_ic_t": 2.7555526134181627, "d10_d1": 0.00026790858346543517, "d10_d1_t": 1.0399333857508466},
+      "10:31-11:00": {"rank_ic": 0.02533962441499455, "rank_ic_t": 2.560072738504571, "d10_d1": 0.0004916710464524302, "d10_d1_t": 1.5906663024941752}
+    },
+    "paired_delta_vs_linear": {
+      "5m_rank_ic": -0.0013828558592217262,
+      "10m_rank_ic": 0.000051183254534696144,
+      "30m_rank_ic": 0.0011195548665843538,
+      "5m_d10_d1": -0.000021677765923580052,
+      "10m_d10_d1": -0.00001629923416312704,
+      "30m_d10_d1": -0.00007394678525311534
+    },
+    "decision": "do not replace B*L: the small insignificant 30m IC gain comes with weaker 5m IC and lower D10-D1 at every short horizon; do not tune thresholds on this month"
+  },
+  "evidence_paths": [
+    "results/research/R017/flow5_capacity_switch_5m_returns_full_market_202601_v1",
+    "results/research/R017/book_flow_absorption_breakout_returns_full_market_202601_v1",
+    "results/research/R017/flow_to_opponent_depth_buy_sell_symmetry_5m_full_market_202601_v1",
+    "results/research/R017/sell_pressure_reversal_5m_limit_impact_full_market_202601_v1",
+    "results/research/R017/f018_incremental_controls_full_market_202601_v1",
+    "results/research/R017/f018_liquidity_conditioning_full_market_202601_v1",
+    "results/research/R017/f018_continuous_liquidity_composite_full_market_202601_v1",
+    "results/research/R017/f018_continuous_soft_threshold_full_market_202601_v1",
+    "results/research/R017/f018_raw_15m_horizon_full_market_202601_v1"
+  ],
+  "implementation": [
+    "scripts/backtests/analyze_flow5_capacity_switch_5m.py",
+    "scripts/backtests/analyze_flow_to_opponent_depth_side_symmetry.py",
+    "scripts/backtests/analyze_sell_pressure_reversal_limit_impact.py",
+    "scripts/backtests/analyze_f018_incremental_controls.py",
+    "scripts/backtests/analyze_f018_liquidity_conditioning.py",
+    "scripts/backtests/analyze_f018_continuous_liquidity_composite.py",
+    "scripts/backtests/analyze_f018_continuous_soft_threshold.py",
+    "scripts/backtests/analyze_f018_raw_15m_horizon.py"
+  ],
+  "limitations": [
+    "single-month evidence only",
+    "transaction costs, turnover, and capacity not tested",
+    "intraday pre-return, activity, spread, and depth controls completed; daily style neutralization not tested",
+    "single-month liquidity gate passes the pre-specified rule but threshold and additional-month robustness are untested",
+    "continuous liquidity weighting improves tail spread but paired Rank IC increment over raw F018 is small and insignificant",
+    "the frozen bottom-tercile soft threshold was tested and rejected as the main version because it reduced short-horizon tail spreads",
+    "domain heterogeneity remains material",
+    "standalone production factor calculator not yet packaged"
+  ],
+  "promotion_gates": [
+    "freeze sign, windows, entry, and domains before additional months",
+    "replicate 5/10/30-minute decay in at least three additional months",
+    "replicate raw F018, the frozen high-liquidity condition, and the continuous linear composite score in additional months",
+    "report every domain and each exchange",
+    "pass executable-entry, turnover, capacity, and transaction-cost tests",
+    "package a dedicated factor calculator and pass factor preflight"
+  ]
+}

@@ -18,7 +18,8 @@
     {"id":"F014","legacy_ideas":["NP01","NP02","NP03","NP04","NP05"],"source_sections":["docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md#5. 第一批候选因子","docs/订单簿形态与非对称自刺激_增量因子手册.md#6. 因子与研究发现映射"]},
     {"id":"F015","legacy_ideas":["NPE01","NPE02","NPE03","NPE04","NPE05"],"source_sections":["docs/HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md#6. 第二批候选：需要新增一次投影读取"]},
     {"id":"F016","legacy_ideas":["DR01","DR02","DR03","DR04","DR05"],"source_sections":["docs/近端大单遮挡与深档撤单响应因子设计文档.md#11. 日频因子"]},
-    {"id":"F017","legacy_ideas":["MSI01","MSI02","MSI03","MSI04","MSI05","MSI06","MSI07","MSI08","MSI09","MSI10"],"source_sections":["docs/母单结构与执行阶段_衍生因子研究手册.md#6. 日内候选因子"]}
+    {"id":"F017","legacy_ideas":["MSI01","MSI02","MSI03","MSI04","MSI05","MSI06","MSI07","MSI08","MSI09","MSI10"],"source_sections":["docs/母单结构与执行阶段_衍生因子研究手册.md#6. 日内候选因子"]},
+    {"id":"F018","legacy_ideas":["-FlowToOpponentDepth","minus_flow_to_opponent_depth","F018-CL"],"source_sections":["research/candidate_factors/F018_minus_flow_to_opponent_depth/README.md#3. 冻结定义","docs/RESEARCH_NON_PARENT_WINDOW_PATH_202601_FINDINGS.md"]}
   ],
   "research_lineage": [
     {"ids":["R001"],"legacy_ideas":["M00","M1-M6"],"source_sections":["docs/EXPERIMENT_PLAN.md#4. M00：已完成的 M 系列基线"]},

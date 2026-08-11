@@ -1,0 +1,31 @@
+{
+  "kind": "research_run",
+  "research_id": "R014",
+  "spec_version": "v2_raw_pilot",
+  "created_at": "2026-08-09T04:27:20.008252+00:00",
+  "research_question": "控制普通主动流后，成交机会差是否仍预测未来主动流、活动度及收益？",
+  "decision_rule": "初筛只报告 raw 未中性化结果；成交机会差相对普通主动流没有稳定的未来订单流增量则停止，不调参。",
+  "factor_runs": {
+    "F014": "/home/avery/lob-research-1/runs/factors/F014/non_parent_candidates_fixed_1030_full_market_202601_v2/completion.json"
+  },
+  "data_dependencies": [
+    "P002"
+  ],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q004",
+    "Q005",
+    "Q006",
+    "Q007",
+    "Q008"
+  ],
+  "research_outputs": [
+    "未来主动流增量",
+    "活动度",
+    "通过后收益"
+  ],
+  "result_root": "results/research/R014",
+  "status": "planned",
+  "notes": "九分域raw直接目标为主，交易所为辅助；固定10:30；不使用收益标签；P002通过F014 source completion追溯。"
+}

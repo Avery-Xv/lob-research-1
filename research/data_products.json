@@ -2,6 +2,7 @@
   "schema_version": 1,
   "products": [
     {"id":"P001","name":"共享 LOB 事件与生命周期原语","legacy_aliases":[],"kind":"shared_data_product","implementation":["scripts/factors/shared_lob_primitives/run.py","scripts/factors/shared_lob_primitives/engine.py"],"required_quality_gates":["Q001","Q002","Q003","Q004","Q005","Q006","Q007"],"note":"一次扫描服务多个研究方向；它本身不回答研究问题。"},
-    {"id":"P002","name":"非母单订单状态缓存","legacy_aliases":[],"kind":"shared_data_product","implementation":["scripts/factors/order_shape_mechanism/compute_non_parent_order_state_v4.py"],"required_quality_gates":["Q001","Q002","Q004","Q005","Q006","Q007"],"note":"固定10:30时间局部历史；供 F014 直接读取，不把缓存生成当作实证结论。"}
+    {"id":"P002","name":"非母单订单状态缓存","legacy_aliases":[],"kind":"shared_data_product","implementation":["scripts/factors/order_shape_mechanism/compute_non_parent_order_state_v4.py"],"required_quality_gates":["Q001","Q002","Q004","Q005","Q006","Q007"],"note":"固定10:30时间局部历史；供 F014 直接读取，不把缓存生成当作实证结论。2026-01 已封存运行的 M1-M6 与 NP01-NP04 可用，但 near_cancel 字段被 Q005 深圳零价格缺陷阻断。"},
+    {"id":"P003","name":"非母单多尺度盘口与成交流路径缓存","legacy_aliases":[],"kind":"shared_data_product","implementation":["scripts/factors/order_shape_non_parent/window_path_engine.py","scripts/factors/order_shape_non_parent/compute_window_path_v4.py"],"required_quality_gates":["Q001","Q002","Q003","Q004","Q005","Q006","Q007","Q008"],"note":"固定10:30信号；保留10:00-10:30时间加权盘口、1/5/30分钟主动流、六个5分钟分段及未来1/5/10分钟直接目标。2026-01全市场运行已通过QC并封存。"}
   ]
 }

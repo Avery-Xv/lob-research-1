@@ -1,0 +1,24 @@
+{
+  "kind": "research_run",
+  "research_id": "R017",
+  "factor_id": "F018",
+  "spec_version": "v1_point_in_time_liquidity_tercile_gate",
+  "created_at": "2026-08-10T10:30:00+00:00",
+  "research_question": "F018是否应只在10:30前盘口紧、绝对深度大且交易活跃的流动性状态中启用？",
+  "gate_definition": "每日×冻结九分域内，等权合成价差紧度、三档深度、主动成交量和订单数排名；最高三分之一预注册为启用组，中间与最低三分之一均报告。",
+  "decision_rule": "仅当10或30分钟高流动性组F018 Rank IC同时高于全样本和低流动性组，且配对high-low差的t值至少为2、另一短周期不反号，才支持高流动性条件启用；D10-D1仅作辅助。",
+  "factor_runs": {
+    "F014_window": "/home/avery/lob-research-1/runs/factors/F014/non_parent_window_path_5m_30m_full_market_202601_v1/completion.json",
+    "F014_candidates": "/home/avery/lob-research-1/runs/factors/F014/non_parent_candidates_fixed_1030_full_market_202601_v3_lineage/completion.json"
+  },
+  "data_dependencies": ["P003"],
+  "required_quality_gates": ["Q001", "Q002", "Q003", "Q004", "Q005", "Q006", "Q007", "Q008"],
+  "research_outputs": [
+    "全样本及高/中/低流动性状态的5/10/30分钟与至收盘Rank IC和D10-D1",
+    "高流动性启用组相对全样本、低状态和中状态的逐日配对差",
+    "同状态原始Flow5基准与流动性状态覆盖率诊断"
+  ],
+  "result_root": "results/research/R017/f018_liquidity_conditioning_full_market_202601_v1",
+  "status": "planned",
+  "notes": "Gate inputs end at 10:30; raw F018 is retained rather than liquidity-residualized; no future-return filtering or style neutralization."
+}

@@ -1,0 +1,32 @@
+{
+  "kind": "research_run",
+  "research_id": "R017",
+  "spec_version": "v2_window_path",
+  "created_at": "2026-08-10T08:05:47.986438+00:00",
+  "research_question": "盘口状态持续但主动流反向响应的背离是否解释未来盘口、订单流、波动与收益？",
+  "decision_rule": "若只是盘口不平衡重标度则停止。",
+  "factor_runs": {
+    "F014": "/home/avery/lob-research-1/runs/factors/F014/non_parent_window_path_5m_30m_full_market_202601_v1/completion.json"
+  },
+  "data_dependencies": [
+    "P003"
+  ],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q003",
+    "Q004",
+    "Q005",
+    "Q006",
+    "Q007",
+    "Q008"
+  ],
+  "research_outputs": [
+    "二维状态",
+    "条件残差",
+    "直接目标与收益"
+  ],
+  "result_root": "results/research/R017",
+  "status": "planned",
+  "notes": "January-only one-sided sell-pressure 5-minute reversal; authoritative daily price limits plus minute OHLC; primary entry-off-limit sample; future touch/exit lock only secondary execution diagnostics; frozen nine domains primary."
+}

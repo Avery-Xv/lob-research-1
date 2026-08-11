@@ -1,0 +1,31 @@
+{
+  "kind": "research_run",
+  "research_id": "R016",
+  "spec_version": "v1",
+  "created_at": "2026-08-09T04:36:12.505940+00:00",
+  "research_question": "M1 与成交机会强弱的确认/冲突状态是否预测订单流衰减或价格反转？",
+  "decision_rule": "阈值预注册；若依赖目标月阈值或样本稀疏则停止。",
+  "factor_runs": {
+    "F014": "/home/avery/lob-research-1/runs/factors/F014/non_parent_candidates_fixed_1030_full_market_202601_v3_lineage/completion.json"
+  },
+  "data_dependencies": [
+    "P002"
+  ],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q004",
+    "Q005",
+    "Q006",
+    "Q007",
+    "Q008"
+  ],
+  "research_outputs": [
+    "连续交互",
+    "四状态排序",
+    "衰减与收益"
+  ],
+  "result_root": "results/research/R016",
+  "status": "planned",
+  "notes": "NP03主方向标签改为sign(M1)*future_net_share；活动度和波动保持无方向目标；旧v2不用于R016方向结论。"
+}

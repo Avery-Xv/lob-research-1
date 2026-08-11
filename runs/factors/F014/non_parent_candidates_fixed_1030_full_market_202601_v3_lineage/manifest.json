@@ -1,0 +1,32 @@
+{
+  "kind": "factor_run",
+  "factor_id": "F014",
+  "definition_version": "v1_fixed_1030_raw_pilot",
+  "created_at": "2026-08-09T04:31:38.218333+00:00",
+  "months": [
+    "202510",
+    "202511",
+    "202512",
+    "202601"
+  ],
+  "exchange": "ALL",
+  "signal_window": "1029_1030_signal_1030",
+  "input_manifest": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202510_202602.txt",
+  "input_manifest_sha256": "9307b526e04e411a39a9a685d4921562a717a6fb7f37855f6c6e13ad68584d04",
+  "audit_receipt": "/home/avery/lob-research-1/audits/Q008/q008_f014_fixed_1030_raw_pilot_202601_v2/preflight_receipt.json",
+  "audit_receipt_sha256": "4fe6c6e80bba1f870a1c2531a074129e3677c10bce861a2b79dc191dc7ebc560",
+  "data_dependencies": [
+    "P002"
+  ],
+  "required_quality_gates": [
+    "Q004",
+    "Q005",
+    "Q008"
+  ],
+  "implementation": [
+    "scripts/factors/order_shape_non_parent/candidates.py"
+  ],
+  "purpose": "production",
+  "status": "ready_to_submit",
+  "notes": "F014实现边界仅包含不带标签的候选构造器；研究评估脚本哈希由各R结果manifest记录。复用已生成且哈希不变的v2候选产物。"
+}

@@ -25,6 +25,8 @@ IMPLEMENTATIONS = (
     "scripts/factors/joint_large_gap_order_behavior/compute_v4.py",
     "scripts/factors/order_shape_mechanism/m1_quote_engine.py",
     "scripts/factors/order_shape_mechanism/non_parent_order_state_engine.py",
+    "scripts/factors/order_shape_non_parent/window_path_engine.py",
+    "scripts/factors/order_shape_non_parent/compute_window_path_v4.py",
     "scripts/factors/stylized_fact_4_6/reproduce_d01_d03.py",
 )
 CASE_FIELDS = (

@@ -1,0 +1,26 @@
+{
+  "fingerprint": "77220afd23cf3ac8021e9f8c2434b42dce6513e9539cab454a80070f4f0c9b5d",
+  "config": {
+    "factor_version": "non_parent_window_path_1000_1030_v1_20260810",
+    "target_month": "202601",
+    "file_list": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202510_202602.txt",
+    "file_list_sha256": "9307b526e04e411a39a9a685d4921562a717a6fb7f37855f6c6e13ad68584d04",
+    "universe_metadata": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202510_202602.metadata.json",
+    "universe_metadata_sha256": "24f57fbc39827870b29df9f1fd7b64827eaef5aeb4ea9bb50d44eeccc50b4b56",
+    "universe_rule": "point-in-time Shanghai/Shenzhen A shares only: SecuCategory=1, SecuMarket in (83,90), listed by month end, and not terminated before month start",
+    "output_etf_symbols": 0,
+    "symbols": 4,
+    "workers": 2,
+    "batch_size": 4,
+    "event_scan_window": "[09:59,10:41)",
+    "signal_rule": "10:30; primary current state [10:25,10:30), background [10:00,10:30), legacy [10:29,10:30)",
+    "book_rule": "post-event valid uncrossed snapshots held until next event; duration weighted; invalid chains retain last valid book",
+    "active_order_key": "(source_side,direction-specific active_order_id)",
+    "direct_targets": [
+      "[10:30,10:31)",
+      "[10:30,10:35)",
+      "[10:30,10:40)"
+    ],
+    "post_processed_link_fields_used": []
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "kind": "research_run",
+  "research_id": "R017",
+  "factor_id": "F018",
+  "spec_version": "v1_raw_15m_horizon",
+  "created_at": "2026-08-11T05:00:00+00:00",
+  "research_question": "原始F018对10:31至10:45收益的九分域Rank IC和D10-D1如何？",
+  "factor_definition": "fixed_1030_flow5_opponent_depth_twap_v1 raw F018",
+  "signal_cutoff": "10:30:00",
+  "entry_rule": "10:31 minute close",
+  "exit_rule": "10:45 minute close",
+  "primary_scope": "raw non-neutralized frozen nine domains",
+  "missing_label_policy": "先建立信号时点股票池，仅按10:45标签自身可用性过滤；不要求其他未来期限存在",
+  "factor_runs": {
+    "F014_window": "/home/avery/lob-research-1/runs/factors/F014/non_parent_window_path_5m_30m_full_market_202601_v1/completion.json",
+    "F014_candidates": "/home/avery/lob-research-1/runs/factors/F014/non_parent_candidates_fixed_1030_full_market_202601_v3_lineage/completion.json"
+  },
+  "required_quality_gates": ["Q001", "Q002", "Q003", "Q004", "Q005", "Q006", "Q007", "Q008"],
+  "label_cache_root": "data/cache/order_shape_non_parent/fixed_1030_minute_returns_15m_full_market_202601_v1",
+  "result_root": "results/research/R017/f018_raw_15m_horizon_full_market_202601_v1",
+  "status": "planned",
+  "notes": "No style neutralization, threshold search, or cross-horizon future availability filter."
+}

@@ -1,0 +1,25 @@
+{
+  "kind": "research_run",
+  "research_id": "R017",
+  "factor_id": "F018",
+  "spec_version": "v1_continuous_liquidity_weighted_score",
+  "created_at": "2026-08-11T02:00:00+00:00",
+  "research_question": "将F018方向分数与10:30前连续流动性质量百分位相乘，能否形成覆盖全样本且优于原始F018的连续复合因子？",
+  "primary_formula": "B=2*PctRank_date_domain(F018)-1; L=PctRank_date_domain(equal_weight(tight_spread,depth,active_volume,active_order_count)); F018_CL=B*L",
+  "robustness_formulas": ["B*L^2", "B*(0.25+0.75*L)"],
+  "decision_rule": "线性主版本只有在10或30分钟九域聚合Rank IC高于原始F018、逐日配对差为正且另一短周期不反号时，才升级为候选主版本；D10-D1和所有分域必须同时报告。",
+  "factor_runs": {
+    "F014_window": "/home/avery/lob-research-1/runs/factors/F014/non_parent_window_path_5m_30m_full_market_202601_v1/completion.json",
+    "F014_candidates": "/home/avery/lob-research-1/runs/factors/F014/non_parent_candidates_fixed_1030_full_market_202601_v3_lineage/completion.json"
+  },
+  "data_dependencies": ["P003"],
+  "required_quality_gates": ["Q001", "Q002", "Q003", "Q004", "Q005", "Q006", "Q007", "Q008"],
+  "research_outputs": [
+    "每个股票日的连续复合分数",
+    "原始F018、线性复合、平方复合和保底复合的多期限九分域结果",
+    "各复合版本相对原始F018的逐日配对差"
+  ],
+  "result_root": "results/research/R017/f018_continuous_liquidity_composite_full_market_202601_v1",
+  "status": "planned",
+  "notes": "All score inputs end at 10:30; liquidity changes confidence magnitude only and never supplies long/short direction; no hard gate, future filter, or style neutralization."
+}

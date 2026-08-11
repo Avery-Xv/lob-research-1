@@ -19,6 +19,8 @@ TARGETED_TESTS = (
     "tests/factors/order_shape_mechanism/test_non_parent_order_state_engine.py",
     "tests/factors/order_shape_mechanism/test_batch_determinism.py",
     "tests/factors/order_shape_mechanism/test_m1_quote_engine.py",
+    "tests/factors/order_shape_non_parent/test_candidates.py",
+    "tests/factors/order_shape_non_parent/test_window_path_engine.py",
     "tests/factors/stylized_fact_4_6/test_reproduce_d01_d03.py",
     "tests/factors/test_order_behavior_intraday_window.py",
     "tests/factors/test_passive_large_gap_intraday_window.py",

@@ -1,0 +1,33 @@
+{
+  "kind": "research_run",
+  "research_id": "R017",
+  "factor_id": "F018",
+  "spec_version": "v1_incremental_intraday_controls",
+  "created_at": "2026-08-10T10:00:00+00:00",
+  "research_question": "F018控制原始Flow5、信号前收益及日内流动性状态后，是否仍预测后5至30分钟收益？",
+  "decision_rule": "原始结果保留为主基线；若控制后九域聚合Rank IC明显归零或反号，则F018降级为流量/反转/流动性状态，不通过调整控制集或符号挽救。",
+  "factor_runs": {
+    "F014": "/home/avery/lob-research-1/runs/factors/F014/non_parent_window_path_5m_30m_full_market_202601_v1/completion.json"
+  },
+  "data_dependencies": [
+    "P003"
+  ],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q003",
+    "Q004",
+    "Q005",
+    "Q006",
+    "Q007",
+    "Q008"
+  ],
+  "research_outputs": [
+    "原始与控制后5/10/30分钟九域Rank IC和D10-D1",
+    "逐域控制解释度",
+    "控制前后配对差异"
+  ],
+  "result_root": "results/research/R017/f018_incremental_controls_full_market_202601_v1",
+  "status": "planned",
+  "notes": "Factor residualization only; no return residualization; within date x frozen domain; 1/99 winsorization; raw non-neutralized baseline remains primary."
+}

@@ -1,0 +1,12 @@
+{
+  "batch": 1,
+  "symbols": [
+    "SH600000",
+    "SH600036",
+    "SZ000001",
+    "SZ000002"
+  ],
+  "signal_rows": 80,
+  "quality_rows": 80,
+  "factor_version": "non_parent_window_path_1000_1030_v1_20260810"
+}

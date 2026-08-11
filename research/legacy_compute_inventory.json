@@ -1,14 +1,17 @@
 {
   "schema_version": 1,
-  "as_of": "2026-08-07",
+  "as_of": "2026-08-11",
   "counts": {
-    "factor_groups": 17,
+    "factor_groups": 18,
     "research_experiments": 25
   },
   "policy": "Only audited artifacts are imported. Partial evidence never satisfies a full F/R completion gate.",
   "factors": {
     "fully_migrated": [
       {"id":"F013","scope":"M1-M6, medium300, 202601","next_compute":"none for the unchanged baseline"}
+    ],
+    "computed_current_research": [
+      {"id":"F018","scope":"raw and continuous-liquidity-weighted F018, full-market 202601","next_compute":"additional-month replication, cost, turnover and capacity"}
     ],
     "partially_migrated": [
       {"id":"F001","reused":"SH 202601-202602 factor output","remaining":"SZ and R002 horizons/months"},

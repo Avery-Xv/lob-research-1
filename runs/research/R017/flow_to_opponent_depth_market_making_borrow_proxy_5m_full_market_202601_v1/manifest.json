@@ -1,0 +1,33 @@
+{
+  "kind": "research_run",
+  "research_id": "R017",
+  "spec_version": "v2_window_path",
+  "created_at": "2026-08-10T00:00:00+00:00",
+  "research_question": "做市借券活跃代理能否解释科创板内-FlowToOpponentDepth预测5分钟收益表现的差异？",
+  "decision_rule": "若代理组与非代理组的因子斜率差异及因子×代理交互均不稳定，则不把做市机制作为当前科创板分域差异的主要解释。",
+  "factor_runs": {
+    "F014": "/home/avery/lob-research-1/runs/factors/F014/non_parent_window_path_5m_30m_full_market_202601_v1/completion.json"
+  },
+  "data_dependencies": [
+    "P003",
+    "jydb.RF_STradingSum"
+  ],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q003",
+    "Q004",
+    "Q005",
+    "Q006",
+    "Q007",
+    "Q008"
+  ],
+  "research_outputs": [
+    "科创板三个市值域的代理分组表现",
+    "代理组减非代理组差异",
+    "因子与代理变量交互回归"
+  ],
+  "result_root": "results/research/R017/flow_to_opponent_depth_market_making_borrow_proxy_5m_full_market_202601_v1",
+  "status": "planned",
+  "notes": "January-only fast diagnostic; raw non-neutralized; proxy is market-making securities-lending activity, not official maker assignment; all labels use rows strictly before signal date."
+}

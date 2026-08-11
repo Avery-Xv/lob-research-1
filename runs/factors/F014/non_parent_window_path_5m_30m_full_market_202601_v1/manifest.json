@@ -1,0 +1,36 @@
+{
+  "kind": "factor_run",
+  "factor_id": "F014",
+  "definition_version": "v2_window_path_5m_30m_raw",
+  "created_at": "2026-08-09T17:02:07.754259+00:00",
+  "months": [
+    "202601"
+  ],
+  "exchange": "ALL",
+  "signal_window": "1000_1030_signal_1030_targets_1m_5m_10m",
+  "input_manifest": "/home/avery/lob-research-1/data/manifests/v4_a_share_stock_paths_202510_202602.txt",
+  "input_manifest_sha256": "9307b526e04e411a39a9a685d4921562a717a6fb7f37855f6c6e13ad68584d04",
+  "audit_receipt": "/home/avery/lob-research-1/audits/Q008/q008_non_parent_window_path_5m_30m_full_market_202601_v1/preflight_receipt.json",
+  "audit_receipt_sha256": "dbd9b7039deed154920955b9c27f1be6c18295567d51d3a8acb3615bf680968c",
+  "data_dependencies": [
+    "P002"
+  ],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q003",
+    "Q004",
+    "Q005",
+    "Q006",
+    "Q007",
+    "Q008"
+  ],
+  "implementation": [
+    "scripts/factors/order_shape_non_parent/candidates.py",
+    "scripts/factors/order_shape_non_parent/window_path_engine.py",
+    "scripts/factors/order_shape_non_parent/compute_window_path_v4.py"
+  ],
+  "purpose": "production",
+  "status": "ready_to_submit",
+  "notes": "全市场A股窗口路径共享缓存；主口径为[10:25,10:30)五分钟时间加权盘口与主动流，背景为[10:00,10:30)三十分钟路径，保留[10:29,10:30)旧口径对照；直接目标为10:30后1/5/10分钟；raw九分域主分析，沪深辅助；R018撤单暂缓。"
+}

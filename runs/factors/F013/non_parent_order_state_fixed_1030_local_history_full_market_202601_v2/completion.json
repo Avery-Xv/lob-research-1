@@ -1,0 +1,15 @@
+{
+  "kind": "factor_run_completion",
+  "status": "completed_audited",
+  "factor_id": "F013",
+  "definition_version": "fixed_1030_local_history_v2",
+  "completed_at": "2026-08-09T04:17:00.261665+00:00",
+  "factor_run_manifest": "/home/avery/lob-research-1/runs/factors/F013/non_parent_order_state_fixed_1030_local_history_full_market_202601_v2/manifest.json",
+  "factor_run_manifest_sha256": "a6404978a9b8ea14ffe376fbf9d238e29108aa2de24bda77815605af4e446394",
+  "outputs": [
+    {
+      "path": "/home/avery/lob-research-1/data/cache/non_parent_order_state/fixed_1030_local_history_full_market_202601_v2",
+      "sha256": "9c315895e01370f47bfd4f9789a5957e1eb136b9ab7ba8cace7718c01ffa7625"
+    }
+  ]
+}

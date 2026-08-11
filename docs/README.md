@@ -10,6 +10,8 @@
 | 查看因子、研究、数据产品和质量门如何流转 | [RESEARCH_PIPELINES.md](RESEARCH_PIPELINES.md) | 当前流程规范 |
 | 提交全市场计算前检查 | [COMPUTE_PREFLIGHT.md](COMPUTE_PREFLIGHT.md) | 当前工程门禁 |
 | 接续非母单研究 | [HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md](HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md) | 当前非母单交接 |
+| 查看已登记候选F018 | [F018候选因子档案](../research/candidate_factors/F018_minus_flow_to_opponent_depth/README.md) | 候选定义、证据、限制和晋级闸门 |
+| 查看停止或暂缓方向 | [CANDIDATE_FACTOR_RESEARCH_BUFFER.md](CANDIDATE_FACTOR_RESEARCH_BUFFER.md) | 排除、降级、暂缓及重启条件 |
 
 ## 研究素材与因子手册
 
@@ -22,8 +24,20 @@
 | [大价差占比因子逻辑文档.md](大价差占比因子逻辑文档.md) | 被动挂单初始 gap、深层成交及条件因子 | F002、F004 依据 |
 | [量比与订单行为因子手册.md](量比与订单行为因子手册.md) | VR、CR、单笔规模及主动/被动订单统计 | F003 依据 |
 | [订单簿形态与非对称自刺激_增量因子手册.md](订单簿形态与非对称自刺激_增量因子手册.md) | M 系列和非母单机制的理论来源 | F013、F014 及 R001、R014–R018 依据 |
+| [RESEARCH_NON_PARENT_FIXED_1030_202601_FINDINGS.md](RESEARCH_NON_PARENT_FIXED_1030_202601_FINDINGS.md) | 2026 年 1 月固定 10:30 全市场九分域实证结果 | R014–R018 当前证据与研究决策 |
+| [RESEARCH_NON_PARENT_WINDOW_PATH_202601_FINDINGS.md](RESEARCH_NON_PARENT_WINDOW_PATH_202601_FINDINGS.md) | 2026年1月5分钟/30分钟时间加权盘口与多尺度成交流结果 | R016、R017新版机制证据与跨月闸门 |
 | [母单结构与执行阶段_衍生因子研究手册.md](母单结构与执行阶段_衍生因子研究手册.md) | 订单链、推断执行片段、节奏、冲击和恢复 | F017 / R021–R025 依据 |
 | [近端大单遮挡与深档撤单响应因子设计文档.md](近端大单遮挡与深档撤单响应因子设计文档.md) | 近端大单遮挡、深档撤单和生命周期 | F016 / R020 依据 |
+
+## 候选因子与研究缓冲区
+
+候选因子使用独立目录冻结公式、时点、证据、风险和晋级闸门。未达到生产条件的失败或受阻方向进入缓冲区，不从研究历史中删除。
+
+| 资产 | 状态 | 用途 |
+|---|---|---|
+| [F018：对手盘深度归一化主动流反转](../research/candidate_factors/F018_minus_flow_to_opponent_depth/README.md) | 单月候选 | 保存`-FlowToOpponentDepth`定义、九分域收益、双边和涨跌停证据 |
+| [F018机器规格](../research/candidate_factors/F018_minus_flow_to_opponent_depth/factor_spec.json) | 机器可读 | 保存冻结公式、时间窗、结果数值和晋级门 |
+| [候选因子研究缓冲区](CANDIDATE_FACTOR_RESEARCH_BUFFER.md) | 持续维护 | 保存排除、降级、暂缓方向及唯一重启条件 |
 
 ## Handoff 交接文档
 
@@ -61,3 +75,4 @@
 3. 新 handoff 使用 `HANDOFF_<TOPIC>_NEXT_SESSION.md` 命名，并在本页登记。
 4. 进度更新优先修改机器可读注册表，再同步当前总览；不得只改历史 `EXPERIMENT_PLAN.md`。
 5. 不随意移动已有文件；确需迁移时，同步更新注册表 `theory_sources`、相对链接、代码和测试引用。
+6. 单月候选进入`research/candidate_factors/<F编号>_<名称>/`；排除、降级或暂缓方向同步进入研究缓冲区。

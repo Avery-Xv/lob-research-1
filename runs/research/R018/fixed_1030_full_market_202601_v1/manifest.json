@@ -1,0 +1,32 @@
+{
+  "kind": "research_run",
+  "research_id": "R018",
+  "spec_version": "v1",
+  "created_at": "2026-08-09T04:27:20.319043+00:00",
+  "research_question": "无方向撤单强度是否跨域预测波动、点差扩大和深度下降？",
+  "decision_rule": "对称版本跨域有效且镜像通过；仅带方向旧版本有效则停止。",
+  "factor_runs": {
+    "F014": "/home/avery/lob-research-1/runs/factors/F014/non_parent_candidates_fixed_1030_full_market_202601_v2/completion.json"
+  },
+  "data_dependencies": [
+    "P002"
+  ],
+  "required_quality_gates": [
+    "Q001",
+    "Q002",
+    "Q004",
+    "Q005",
+    "Q006",
+    "Q007",
+    "Q008"
+  ],
+  "research_outputs": [
+    "波动",
+    "点差",
+    "深度",
+    "镜像结果"
+  ],
+  "result_root": "results/research/R018",
+  "status": "planned",
+  "notes": "九分域raw直接目标为主，交易所为辅助；固定10:30；不使用收益标签；P002通过F014 source completion追溯。"
+}
