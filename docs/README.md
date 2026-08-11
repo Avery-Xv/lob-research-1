@@ -10,6 +10,7 @@
 | 查看因子、研究、数据产品和质量门如何流转 | [RESEARCH_PIPELINES.md](RESEARCH_PIPELINES.md) | 当前流程规范 |
 | 提交全市场计算前检查 | [COMPUTE_PREFLIGHT.md](COMPUTE_PREFLIGHT.md) | 当前工程门禁 |
 | 接续非母单研究 | [HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md](HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md) | 当前非母单交接 |
+| 接续F018收益深化与期限形状研究 | [HANDOFF_F018_NEXT_RESEARCH_SESSION.md](HANDOFF_F018_NEXT_RESEARCH_SESSION.md) | 当前F018下一批研究交接 |
 | 查看已登记候选F018 | [F018候选因子档案](../research/candidate_factors/F018_minus_flow_to_opponent_depth/README.md) | 候选定义、证据、限制和晋级闸门 |
 | 查看停止或暂缓方向 | [CANDIDATE_FACTOR_RESEARCH_BUFFER.md](CANDIDATE_FACTOR_RESEARCH_BUFFER.md) | 排除、降级、暂缓及重启条件 |
 
@@ -46,6 +47,7 @@
 | 文档 | 交接范围 | 使用时机 |
 |---|---|---|
 | [HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md](HANDOFF_NON_PARENT_ORDER_SHAPE_NEXT_SESSION.md) | NP01–NP05、P002缓存、九分域直接目标 | 接续非母单订单状态研究 |
+| [HANDOFF_F018_NEXT_RESEARCH_SESSION.md](HANDOFF_F018_NEXT_RESEARCH_SESSION.md) | F018现有证据、连续复合、15分钟标签和期限十档形状 | 启动下一批F018收益深化研究 |
 | [HANDOFF_D04_D06_NEXT_SESSION.md](HANDOFF_D04_D06_NEXT_SESSION.md) | D04–D06 定义、历史窗口和实现分层 | 接续主动大单历史意外研究 |
 | [HANDOFF_INTRADAY_STRUCTURE_PILOT.md](HANDOFF_INTRADAY_STRUCTURE_PILOT.md) | 非母单与执行结构初筛边界 | 启动结构研究 pilot |
 
